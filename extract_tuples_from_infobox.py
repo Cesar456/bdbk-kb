@@ -23,7 +23,7 @@ index_file = sys.argv[1]
 dest_file = sys.argv[2]
 log_fn = sys.argv[3]
 
-from .setup_logging import setup as setup_log
+from setup_logging import setup as setup_log
 logging = setup_log(log_fn)
 
 logging.info('Source folder: %s', index_file)
@@ -100,6 +100,7 @@ for line in f:
     size = int(size)
 
     if gzip_file_id != fid:
+        gzip_file_id = fid
         if gzip_file:
             gzip_file.close()
         gzip_file = gzip.open('%s.%.3d.gz' % (gzfile_suffix, gzip_file_id))
