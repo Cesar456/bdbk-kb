@@ -7,40 +7,11 @@ import re
 import os
 import gzip
 import sys
+import logging
 
-import argparse
+link_regx = re.compile(r'href=["\']*([^"\']+)["\']*')
 
-parser = argparse.ArgumentParser(
-    description='I will read baidu baike and produce you the info tuples of its infobox.')
-parser.add_argument('--index', required=True, help='index file of baike database.')
-parser.add_argument('--page-ids', help='only extract data from pages specified in this list file.')
-parser.add_argument('--output', required=True, help='output file name.')
-parser.add_argument('--log', required=True, help='log file name.')
-
-args = parser.parse_args()
-index_file = args.index
-dest_file = args.output
-log_fn = args.log
-
-page_ids = None
-if args.page_ids:
-    f = open(args.page_ids)
-    page_ids = []
-    for line in f:
-        page_ids.append(int(line))
-
-    f.close()
-
-from setup_logging import setup as setup_log
-logging = setup_log(log_fn)
-
-logging.info('Source folder: %s', index_file)
-logging.info('Output: %s', dest_file)
-logging.info('Extracting %d special pages', len(page_ids))
-
-meta_data = open(dest_file, 'wa')
-
-def extract_information(page_id, content):
+def extract_information(page_id, content, meta_data=None):
     # scrapy doc says it will detect encoding, but we should really
     # be careful at that
     page = scrapy.http.TextResponse(
@@ -85,18 +56,31 @@ def extract_information(page_id, content):
         bititle = re.sub(r'[\xa0\s]', '', page_bititle[0])
 
         # if we have a <br>, then multiple bicontents should be produced
-        page_bicontents = i.xpath(".//*[@class='biContent']//text()").extract()
+        page_bicontents = i.xpath(".//*[@class='biContent']//text()|.//a").extract()
         target = ''
 
-        #in_href=False
+        in_href=False
         for bicontent in page_bicontents:
-            if '\n' in bicontent:
-                target += re.sub(r'[\xa0\s\n]', '', bicontent)
-                if target:
-                    tuples.append((page_title, bititle, target))
-                target = ''
+            if '<a' in bicontent:
+                if in_href:
+                    target += '}}'
+
+                mch = re.search(link_regx, bicontent)
+                if mch:
+                    in_href = True
+                    target += '{{link:%s|' % mch.group(1)
             else:
-                target += bicontent.strip()
+                if '\n' in bicontent:
+                    target += re.sub(r'[\xa0\s\n]', '', bicontent)
+                    if target:
+                        tuples.append((page_title, bititle, target))
+                    target = ''
+                else:
+                    target += bicontent.strip()
+
+                if in_href:
+                    in_href = False
+                    target += '}}'
 
         tuples.append((page_title, bititle, target))
 
@@ -106,44 +90,84 @@ def extract_information(page_id, content):
         logging.info('no meta data: page_id(%d)', page_id)
 
     for i in tuples:
-        meta_data.write('\t'.join(i).encode('utf8'))
-        meta_data.write('\n')
+        if meta_data:
+            meta_data.write('\t'.join(i).encode('utf8'))
+            meta_data.write('\n')
+        else:
+            print '\t'.join(i)
+
     return tuples
 
-f = open(index_file)
-gzfile_suffix = index_file[:index_file.rfind('.')]
-gzip_file = None
-gzip_file_id = -1
-for line in f:
-    line = re.sub(r'[\r\n]', '', line).decode('utf8')
-    if not line.strip():
-        break
+if __name__ == '__smain__':
+    import argparse
 
-    page_id, title, fid, offset, size = line.split('\t')
-    page_id = int(page_id)
-    if page_ids and page_id not in page_ids:
-        continue
-        
-    fid = int(fid)
-    offset = int(offset)
-    size = int(size)
+    parser = argparse.ArgumentParser(
+        description='I will read baidu baike and produce you the info tuples of its infobox.')
+    parser.add_argument('--index', required=True, help='index file of baike database.')
+    parser.add_argument('--page-ids', help='only extract data from pages specified in this list file.')
+    parser.add_argument('--output', required=True, help='output file name.')
+    parser.add_argument('--log', required=True, help='log file name.')
 
-    if gzip_file_id != fid:
-        gzip_file_id = fid
-        if gzip_file:
-            gzip_file.close()
-        gzip_file = gzip.open('%s.%.3d.gz' % (gzfile_suffix, gzip_file_id))
+    args = parser.parse_args()
+    index_file = args.index
+    dest_file = args.output
+    log_fn = args.log
 
-    gzip_file.seek(offset)
-    content = gzip_file.read(size)
+    page_ids = None
+    if args.page_ids:
+        f = open(args.page_ids)
+        page_ids = []
+        for line in f:
+            page_ids.append(int(line))
 
-    try:
-        extract_information(page_id, content)
-    except Exception as e:
-        logging.warning('exception %r: page_id(%d)', e, page_id)
+        f.close()
 
-if gzip_file:
-    gzip_file.close()
+    from setup_logging import setup as setup_log
+    logging = setup_log(log_fn)
 
-f.close()
-meta_data.close()
+    logging.info('Source folder: %s', index_file)
+    logging.info('Output: %s', dest_file)
+    logging.info('Extracting %d special pages', len(page_ids))
+
+    f = open(index_file)
+    meta_data = open(dest_file, 'wa')
+
+    gzfile_suffix = index_file[:index_file.rfind('.')]
+    gzip_file = None
+    gzip_file_id = -1
+    for line in f:
+        line = re.sub(r'[\r\n]', '', line).decode('utf8')
+        if not line.strip():
+            break
+
+        page_id, title, fid, offset, size = line.split('\t')
+        page_id = int(page_id)
+        if page_ids and page_id not in page_ids:
+            continue
+            
+        fid = int(fid)
+        offset = int(offset)
+        size = int(size)
+
+        if gzip_file_id != fid:
+            gzip_file_id = fid
+            if gzip_file:
+                gzip_file.close()
+            gzip_file = gzip.open('%s.%.3d.gz' % (gzfile_suffix, gzip_file_id))
+
+        gzip_file.seek(offset)
+        content = gzip_file.read(size)
+
+        try:
+            extract_information(page_id, content, meta_data=meta_data)
+        except Exception as e:
+            logging.warning('exception %r: page_id(%d)', e, page_id)
+
+    if gzip_file:
+        gzip_file.close()
+
+    f.close()
+    meta_data.close()
+
+else:
+    extract_information(0, open('test.html').read())
