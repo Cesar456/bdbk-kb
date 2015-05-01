@@ -66,8 +66,16 @@ def extract_information(page_id, content):
         if len(page.xpath("//*[@class='sorryBubble']")) > 0:
             return
 
-        logging.warning('Unable to extract title: page_id(%d)', page_id)
-        return
+        attempt = page.xpath("//*[@class='title']/h1/text()").extract()
+        if len(attempt) == 1:
+            page_title = attempt[0]
+        else:
+            attempt = page.xpath("//*[@class='name']/h1/text()").extract()
+            if len(attempt) == 1:
+                page_title = attempt[0]
+            else:
+                logging.warning('Unable to extract title: page_id(%d)', page_id)
+                return
 
     tuples = []
 
