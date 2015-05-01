@@ -127,7 +127,8 @@ if __name__ == '__main__':
 
     logging.info('Source folder: %s', index_file)
     logging.info('Output: %s', dest_file)
-    logging.info('Extracting %d special pages', len(page_ids))
+    if page_ids:
+        logging.info('Extracting %d special pages', len(page_ids))
 
     f = open(index_file)
     meta_data = open(dest_file, 'wa')
