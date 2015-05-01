@@ -62,6 +62,10 @@ def extract_information(page_id, content):
         if len(page.xpath("//*[contains(@id, 'lemma-list')]")) > 0:
             return
 
+        # 404 page...
+        if len(page.xpath("//*[@class='sorryBubble']")) > 0:
+            return
+
         logging.warning('Unable to extract title: page_id(%d)', page_id)
         return
 
