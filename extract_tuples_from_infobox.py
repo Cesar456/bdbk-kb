@@ -98,7 +98,7 @@ def extract_information(page_id, content, meta_data=None):
 
     return tuples
 
-if __name__ == '__smain__':
+if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(
