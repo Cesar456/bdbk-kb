@@ -58,6 +58,10 @@ def extract_information(page_id, content):
     elif len(page_title) != 0:
         page_title = page_title[0]
     else:
+        # are we at disambiguity page?
+        if len(page.xpath("//*[contains(@id, 'lemma-list')]")) > 0:
+            return
+
         logging.warning('Unable to extract title: page_id(%d)', page_id)
         return
 
