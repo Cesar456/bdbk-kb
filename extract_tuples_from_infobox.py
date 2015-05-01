@@ -53,12 +53,13 @@ def extract_information(page_id, content):
     #page_title = page.xpath("//*[contains(@class,'lemmaTitleBox')]")
     page_title = page.xpath("//*[starts-with(@class, 'lemmaTitle')][last()]//text()")
     page_title = page_title.extract()
-    if len(page_title) != 1:
+    if len(page_title) == 1:
+        page_title = page_title[0]
+    elif len(page_title) != 0:
+        page_title = page_title[0]
+    else:
         logging.warning('Unable to extract title: page_id(%d)', page_id)
         return
-    else:
-        page_title = page_title[0]
-        #print 'TITLE', page_title
 
     tuples = []
 
