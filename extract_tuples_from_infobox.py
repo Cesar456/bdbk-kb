@@ -8,26 +8,35 @@ import os
 import gzip
 import sys
 
-def help():
-    print 'I will read baidu baike and produce you the info tuples of its infobox'
-    print 'Three parameters:'
-    print 'argv[0]: index file for our data'
-    print 'argv[1]: output file name'
-    print 'argv[2]: log file name'
+import argparse
 
-if len(sys.argv) != 4:
-    help()
-    sys.exit(1)
+parser = argparse.ArgumentParser(
+    description='I will read baidu baike and produce you the info tuples of its infobox.')
+parser.add_argument('--index', required=True, help='index file of baike database.')
+parser.add_argument('--page-ids', help='only extract data from pages specified in this list file.')
+parser.add_argument('--output', required=True, help='output file name.')
+parser.add_argument('--log', required=True, help='log file name.')
 
-index_file = sys.argv[1]
-dest_file = sys.argv[2]
-log_fn = sys.argv[3]
+args = parser.parse_args()
+index_file = args.index
+dest_file = args.output
+log_fn = args.log
+
+page_ids = None
+if args.page_ids:
+    f = open(args.page_ids)
+    page_ids = []
+    for line in f:
+        page_ids.append(int(line))
+
+    f.close()
 
 from setup_logging import setup as setup_log
 logging = setup_log(log_fn)
 
 logging.info('Source folder: %s', index_file)
 logging.info('Output: %s', dest_file)
+logging.info('Extracting %d special pages', len(page_ids))
 
 meta_data = open(dest_file, 'wa')
 
@@ -95,6 +104,9 @@ for line in f:
 
     page_id, title, fid, offset, size = line.split('\t')
     page_id = int(page_id)
+    if page_ids and page_id not in page_ids:
+        continue
+        
     fid = int(fid)
     offset = int(offset)
     size = int(size)
