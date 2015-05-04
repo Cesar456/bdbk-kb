@@ -55,7 +55,7 @@ def extract_information(page_id, content, meta_data=None):
         page_bititle = i.xpath(".//*[@class='biTitle']//text()").extract()
         if len(page_bititle) == 0:
             continue
-        bititle = re.sub(r'[\xa0\s]', '', page_bititle[0])
+        bititle = re.sub(r'[\xa0\s]', '', ''.join(page_bititle))
 
         # if we have a <br>, then multiple bicontents should be produced
         page_bicontents = i.xpath(".//*[@class='biContent']//text()|.//a").extract()
