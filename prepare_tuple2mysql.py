@@ -12,7 +12,12 @@ if __name__ == '__main__':
     f = open(tuple_file)
     o = open(output_file, 'w')
     for i in f:
-        subject, verb, target = i.rstrip().split('\t')
+        try:
+            subject, verb, target = i.rstrip().split('\t')
+        except Exception as e:
+            subject = ''
+            verb = ''
+            target = ''
         verb = cleanup_verb(verb.decode('utf8')).encode('utf8')
 
         if not verb:
