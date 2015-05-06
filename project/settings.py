@@ -3,8 +3,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'baidu_baike',
         'USER': 'qaground',
+        'PORT': 17806,
         'PASSWORD': 'qaground',
-        'HOST': 'localhost',
+        'HOST': '127.0.0.1',
     }
 }
 
