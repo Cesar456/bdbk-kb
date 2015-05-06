@@ -65,7 +65,7 @@ if __name__ == '__main__':
     vb_dict = VerbDict(vb_dict_fn)
 
     def convert_line(line):
-        ne, verb, target = line.rstrip().split('\t')
+        ne, verb, target = line.rstrip().split('\t').decode('utf8')
         if ne not in ne_dict:
             n = NamedEntity(name=ne)
             n.save()
@@ -87,6 +87,8 @@ if __name__ == '__main__':
 
         for line in tuple_file:
             line_counter += 1
+            if line_counter % 1000:
+                print line_counter, 'processed'
 
             if skip_lines:
                 skip_lines -= 1
