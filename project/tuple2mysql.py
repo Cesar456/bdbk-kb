@@ -63,6 +63,8 @@ if __name__ == '__main__':
 
     ne_dict = NamedEntityDict(ne_dict_fn)
     vb_dict = VerbDict(vb_dict_fn)
+    problems = open('problems.log', 'wa')
+    print 'Output problems into problems.log'
 
     def convert_line(line):
         ne, verb, target = line.rstrip().split('\t')
@@ -98,10 +100,11 @@ if __name__ == '__main__':
                 convert_line(line.decode('utf8'))
             except Exception as e:
                 print 'ERROR', e
-                print 'Saving state...'
-                print 'Dumping Dicts...'
-                ne_dict.save_state('saved_ne_dict.pickle')
-                vb_dict.save_state('saved_vb_dict.pickle')
-                print 'Saved to saved_ne_dict.pickle and saved_vb_dict.pickle'
-                print 'Problem encountered when processing line #%d' % line_counter
-                break
+                #print 'Saving state...'
+                #print 'Dumping Dicts...'
+                #ne_dict.save_state('saved_ne_dict.pickle')
+                #vb_dict.save_state('saved_vb_dict.pickle')
+                #print 'Saved to saved_ne_dict.pickle and saved_vb_dict.pickle'
+                problems.write('Problem encountered when processing line #%d, %r' % line_counter, e)
+
+    problems.close()
