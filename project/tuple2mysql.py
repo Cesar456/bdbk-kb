@@ -105,6 +105,6 @@ if __name__ == '__main__':
                 #ne_dict.save_state('saved_ne_dict.pickle')
                 #vb_dict.save_state('saved_vb_dict.pickle')
                 #print 'Saved to saved_ne_dict.pickle and saved_vb_dict.pickle'
-                problems.write('Problem encountered when processing line #%d, %r' % line_counter, e)
+                problems.write('Problem encountered when processing line #%d, %r' % (line_counter, e))
 
     problems.close()
