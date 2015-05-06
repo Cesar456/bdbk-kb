@@ -65,7 +65,7 @@ if __name__ == '__main__':
     vb_dict = VerbDict(vb_dict_fn)
 
     def convert_line(line):
-        ne, verb, target = line.rstrip().split('\t').decode('utf8')
+        ne, verb, target = line.rstrip().split('\t')
         if ne not in ne_dict:
             n = NamedEntity(name=ne)
             n.save()
@@ -95,7 +95,7 @@ if __name__ == '__main__':
                 continue
 
             try:
-                convert_line(line)
+                convert_line(line.decode('utf8'))
             except Exception as e:
                 print 'ERROR', e
                 print 'Saving state...'
