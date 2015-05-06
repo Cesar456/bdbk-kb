@@ -4,6 +4,8 @@ from process_relations import *
 import sys
 
 if __name__ == '__main__':
+    if len(sys.argv) < 3:
+        print 'This script converts a tri-tuple file to mysqlimport readable file. (reduces verbs to normal form)'
     tuple_file = sys.argv[1]
     output_file = sys.argv[2]
 

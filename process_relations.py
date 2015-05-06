@@ -43,6 +43,11 @@ def cleanup_verb(verb):
 
 if __name__ == '__main__':
     freqdist = dict()
+    if len(sys.argv) < 3:
+        print '''This script reduces verbs from a list to normal form, counts them, 
+and sorts them in a reversed order.
+'''
+        sys.exit(1)
     input = sys.argv[1]
     output = sys.argv[2]
     f = open(input)

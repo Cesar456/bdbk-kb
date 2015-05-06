@@ -147,12 +147,19 @@ is_good_char = Classifier(cjk_char_name+[
 
 if __name__ == '__main__':
     import sys
+    if len(sys.argv) < 2:
+        print '''This script finds weird verbs from a verb list extracted from tuples.
+
+Good verbs are considered as only contaning CJK chars, ASCII chars, numbers, 
+words split by 、/ are also good verbs.'''
+        sys.exit(1)
+
     input = sys.argv[1]
 
     units = re.compile(ur'^(.*?)\((.*?)\)$')
     parallel = re.compile(ur'^(.*?)[\/、](.*?)$')
 
-    def get_inner(regx, s):
+    def get_group_text(regx, s):
         match = re.match(regx, s)
         if match:
             try:
@@ -165,8 +172,8 @@ if __name__ == '__main__':
 
     for l in open(input):
         line = l[:l.rfind('\t')].decode('utf8')
-        line = get_inner(units, line)
-        line = get_inner(parallel, line)
+        line = get_group_text(units, line)
+        line = get_group_text(parallel, line)
 
         for i in line:
             if not is_good_char(i):
