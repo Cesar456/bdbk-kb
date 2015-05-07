@@ -12,8 +12,8 @@ def is_identity_content(str1, str2, coef=0.8):
     '''Determine whether two strings are similar,
     using bags of word assumption'''
 
-    lst1 = set(x for x in jieba.cut(str1, cut_all=True) if is_good_char(x))
-    lst2 = set(x for x in jieba.cut(str2, cut_all=True) if is_good_char(x))
+    lst1 = set(x for x in jieba.cut(str1, cut_all=True) if is_good_char(x) and x.strip())
+    lst2 = set(x for x in jieba.cut(str2, cut_all=True) if is_good_char(x) and x.strip())
 
     # print 'lst1:', ','.join(lst1)
     # print 'lst2:', ','.join(lst2)
