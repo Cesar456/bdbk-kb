@@ -18,6 +18,9 @@ def is_identity_content(str1, str2, coef=0.8):
     # print 'lst1:', ','.join(lst1)
     # print 'lst2:', ','.join(lst2)
     # print 'common:', ','.join(lst1 & lst2)
+    if len(lst1) == 0 or len(lst2) == 0:
+        # dont compare with empty list
+        return False
 
     common_length = len(lst1 & lst2)
     # TODO: stop words
@@ -28,6 +31,7 @@ def is_identity_content(str1, str2, coef=0.8):
         return False
 
 ref_regx = re.compile(r'\[\d+\]')
+link_regx = re.compile(r'\{\{link\:.*?\|(.*?)\}\}')
 
 def process_name(bdne, zhwikine):
     def remove_duplicate(lst):
@@ -43,16 +47,21 @@ def process_name(bdne, zhwikine):
 
         return r
 
+    def preprocess_content(content):
+        content = re.sub(ref_regx, '', x.content)
+        content = re.sub(link_regx, lambda x: x.group(1), x.content)
+        return content
+
     bdr = BaiduRelation.objects.filter(named_entity_id=bdne).all()
     zwr = ZhWikiRelation.objects.filter(named_entity_id=zhwikine).all()
 
     bdr = remove_duplicate(bdr)
     zwr = remove_duplicate(zwr)
 
-    bdr = [re.sub(ref_regx, '', x.content) for x in bdr]
+    bdr = [preprocess_content(x.content) for x in bdr]
     # print '\n'.join(bdr)
     # print '*' * 20
-    zwr = [re.sub(ref_regx, '', x.content) for x in zwr]
+    zwr = [preprocess_content(x.content) for x in zwr]
     # print '\n'.join(zwr)
 
     common_tuples = 0
