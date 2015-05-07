@@ -10,3 +10,6 @@ from bdbk.models import Relation as BaiduRelation
 from zhwiki.models import Verb as ZhWikiVerb
 from zhwiki.models import NamedEntity as ZhWikiNamedEntity
 from zhwiki.models import Relation as ZhWikiRelation
+
+import django
+django.setup()
