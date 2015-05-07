@@ -99,12 +99,20 @@ class Classifier(object):
         self._ranges = Classifier.merge_ranges(self._ranges)
 
     def __call__(self, char):
-        od = ord(char)
-        for i in self._ranges:
-            if od >= i[0] and od <= i[1]:
-                return True
+        for chr in char:
+            od = ord(chr)
 
-        return False
+            good = False
+
+            for i in self._ranges:
+                if od >= i[0] and od <= i[1]:
+                    good = True
+                    break
+                    
+            if not good:
+                return False
+
+        return True
 
 def unicode_full_width_to_half(s):
     def _one(char):
