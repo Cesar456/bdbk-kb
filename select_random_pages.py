@@ -18,10 +18,12 @@ if __name__ == '__main__':
 
     for i in os.listdir(dir):
         path = os.path.join(dir, i)
-        lst = random.shuffle(get_page_id_list(path, 'baike_data'))[:20]
+        lst = get_page_id_list(path, 'baike_data')
+        random.shuffle(lst)
+        lst = lst[:20]
+        
         for j in lst:
             page = get_page(path, 'baike_data', j)
 
             with open(os.path.join(output_dir, '%.8d.html' % j), 'w') as f:
                 f.write(page)
-                
