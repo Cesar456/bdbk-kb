@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import os
+import gzip
 
 def get_page(dir, db_name, page_id=None, page_name=None):
     if not page_id and not page_name:
@@ -12,7 +13,7 @@ def get_page(dir, db_name, page_id=None, page_name=None):
 
             if page_id and page_id == int(_page_id)\
                 or page_name and page_name == _title:
-                with open(os.path.join(dir, '%s.%.3d.gz' % (db_name, int(_chunk_id)))) as chunk:
+                with gzip.open(os.path.join(dir, '%s.%.3d.gz' % (db_name, int(_chunk_id)))) as chunk:
                     chunk.seek(int(_offset))
                     data = chunk.read(int(_size))
 
@@ -37,4 +38,4 @@ if __name__ == '__main__':
     page_id = args.page_id
     page_title = args.page_title
 
-    print get_page(dir, db_name, page_id, page_title)
+    print get_page(dir, db_name, page_id, page_title).decode('utf8')
