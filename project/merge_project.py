@@ -76,10 +76,18 @@ def process_name(bdne, zhwikine):
     print 'Result: %d/(%d,%d)' % (common_tuples, len(bdr), len(zwr))
 
 if __name__ == '__main__':
-    for i in BaiduNamedEntity.objects.iterator():
-        raw_input()
+    for i in ZhWikiNamedEntity.objects.iterator():
+        page_name = i.name
+        if '_' in page_name:
+            page_name = page_name[:page_name.rfind('_')]
+
         try:
-            j = ZhWikiNamedEntity.objects.get(name=i.name)
-            process_name(i.pk, j.pk)
+            j = BaiduNamedEntity.objects.get(name=page_name)
+            if process_name(j.pk, i.pk):
+                print page_name, 'looks the same'
+                raw_input()
+            else:
+                print page_name, 'looks different'
         except ObjectDoesNotExist as e:
+            print page_name, 'not found in baidu baike'
             pass
