@@ -82,7 +82,7 @@ if __name__ == '__main__':
             page_name = page_name[:page_name.rfind('_')]
 
         try:
-            j = BaiduNamedEntity.objects.get(name=page_name)
+            j = BaiduNamedEntity.objects.get(name__contains=page_name)
             if process_name(j.pk, i.pk):
                 print page_name, 'looks the same'
                 raw_input()
