@@ -34,19 +34,6 @@ ref_regx = re.compile(r'\[\d+\]')
 link_regx = re.compile(r'\{\{link\:.*?\|(.*?)\}\}')
 
 def process_name(bdne, zhwikine):
-    def remove_duplicate(lst):
-        e = []
-        r = []
-        for i in lst:
-            s = '%d%s' % (i.named_entity_id, i.content)
-            if s not in e:
-                e.append(s)
-                r.append(i)
-            else:
-                i.delete()
-
-        return r
-
     def preprocess_content(content):
         content = re.sub(ref_regx, '', x.content)
         content = re.sub(link_regx, lambda x: x.group(1), x.content)
@@ -54,9 +41,6 @@ def process_name(bdne, zhwikine):
 
     bdr = BaiduRelation.objects.filter(named_entity_id=bdne).all()
     zwr = ZhWikiRelation.objects.filter(named_entity_id=zhwikine).all()
-
-    bdr = remove_duplicate(bdr)
-    zwr = remove_duplicate(zwr)
 
     bdr = [preprocess_content(x.content) for x in bdr]
     # print '\n'.join(bdr)
