@@ -2,6 +2,17 @@
 import os
 import gzip
 
+def get_page_id_list(dir, db_name):
+    lst = []
+    with open(os.path.join(dir, '%s.index' % db_name)) as idx_file:
+        for i in idx_file:
+            _page_id, _title, _chunk_id, _offset, _size = \
+                i.rstrip().split('\t')
+
+            lst.append(int(_page_id))
+
+    return lst
+
 def get_page(dir, db_name, page_id=None, page_name=None):
     if not page_id and not page_name:
         raise ValueError('either page_id or page_name must not be None')

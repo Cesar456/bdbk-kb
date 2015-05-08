@@ -74,6 +74,7 @@ def process_name(bdne, zhwikine):
                 print j
 
     print 'Result: %d/(%d,%d)' % (common_tuples, len(bdr), len(zwr))
+    return common_tuples > 0
 
 if __name__ == '__main__':
     for i in ZhWikiNamedEntity.objects.iterator():
@@ -82,7 +83,8 @@ if __name__ == '__main__':
             page_name = page_name[:page_name.rfind('_')]
 
         try:
-            j = BaiduNamedEntity.objects.get(name__contains=page_name)
+            # TODO: ambiguous search
+            j = BaiduNamedEntity.objects.get(name=page_name)
             if process_name(j.pk, i.pk):
                 print page_name, 'looks the same'
                 raw_input()
