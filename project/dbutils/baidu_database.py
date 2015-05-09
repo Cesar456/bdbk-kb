@@ -28,7 +28,7 @@ class BaiduDatabase(object):
         self.opened_chunk.seek(offset)
 
     def get_page(self, page_id=None, page_title=None):
-        if not page_id and not page_title:
+        if page_id == None and page_title == None:
             raise ValueError('either page_id or page_title must not be None')
 
         for i in self.pages:
