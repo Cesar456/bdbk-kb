@@ -158,7 +158,7 @@ if __name__ == '__main__':
 
     for pid, ptitle, pcontent in db.all_pages():
         processed_count += 1
-        if processed_count % 10 == 0:
+        if processed_count % 1000 == 0:
             logging.info('%d processed in %d/sec', processed_count, (processed_count-last_processed)/(time.time()-last_time))
             last_processed = processed_count
             last_time = time.time()
