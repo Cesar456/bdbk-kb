@@ -9,7 +9,7 @@ import os
 import gzip
 import sys
 import logging
-from process_relations import cleanup_verb
+from textutils.process_relations import cleanup_verb
 
 class Extractor(object):
     link_regx = re.compile(r'href=["\']*([^"\']+)["\']*')
@@ -128,8 +128,8 @@ extractor = Extractor()
 
 if __name__ == '__main__':
     import argparse
-    from baidu_database import BaiduDatabase
-    import setup_database
+    from dbutils.baidu_database import BaiduDatabase
+    import project.setup_database
     from bdbk.models import *
     from django.db import connection
     import time
@@ -145,7 +145,7 @@ if __name__ == '__main__':
     db_name = args.db_name
     log_fn = args.log
 
-    from setup_logging import setup as setup_logger
+    from project.setup_logging import setup as setup_logger
     logging = setup_logger(log_fn)
     logging.info('Source: %s in %s', db_name, dir)
 

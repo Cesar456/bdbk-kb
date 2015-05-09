@@ -2,7 +2,7 @@
 
 import os
 import random
-from baidu_database import *
+from dbutils.baidu_database import *
 
 if __name__ == '__main__':
     import argparse

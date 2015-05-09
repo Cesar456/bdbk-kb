@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf8 -*-
 
-from unicode_classifier import is_good_char
-from setup_database import *
+from textutils.unicode_classifier import is_good_char
+from project.setup_database import *
 from django.core.exceptions import ObjectDoesNotExist
 import jieba
 import re

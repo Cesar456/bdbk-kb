@@ -4,7 +4,7 @@
 
 import sys
 import pickle
-from setup_database import *
+from project.setup_database import *
 
 class NamedEntityDict(object):
     def __init__(self, dict_fn=None):

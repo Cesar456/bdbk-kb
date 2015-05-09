@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 
 import os
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings")
 
 from django.db import models
 from bdbk.models import Verb as BaiduVerb
