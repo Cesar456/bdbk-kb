@@ -24,21 +24,23 @@ class BaiduDatabase(object):
 
             self.opened_chunk_id = chunkid
             self.opened_chunk = gzip.open(\
-                os.path.join(dir, '%s.%.3d.gz' % (self.db_name, chunkid)))
+                os.path.join(self.dir, '%s.%.3d.gz' % (self.db_name, chunkid)))
         self.opened_chunk.seek(offset)
 
     def get_page(self, page_id=None, page_title=None):
-        if not page_id and not page_name:
-            raise ValueError('either page_id or page_name must not be None')
+        if not page_id and not page_title:
+            raise ValueError('either page_id or page_title must not be None')
 
         for i in self.pages:
-            if page_id and page_id == i[0] \
-                or page_name and page_name == i[1]:
+            if (page_id and page_id == i[0]) \
+                or (page_title and page_title == i[1]):
 
                 self.seek_to_page(i[2], i[3])
                 data = self.opened_chunk.read(i[4])
                 if len(data) != i[4]:
                     raise IOError('chunk %d is corrupted' % i[4])
+
+                return data
 
         return None
 
@@ -48,7 +50,7 @@ class BaiduDatabase(object):
 
         self.opened_chunk_id = -1
 
-    def pages(self):
+    def all_pages(self):
         for i in self.pages:
             yield (i[0], i[1], self.get_page(i[0]))
 
