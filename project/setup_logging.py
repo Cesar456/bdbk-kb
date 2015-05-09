@@ -12,7 +12,7 @@ def setup(logfn):
 
     consoleHandler = logging.StreamHandler()
     consoleHandler.setFormatter(logFormatter)
-    consoleHandler.setLevel(logging.WARNING)
+    consoleHandler.setLevel(logging.INFO)
     rootLogger.addHandler(consoleHandler)
 
     return logging
