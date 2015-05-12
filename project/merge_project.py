@@ -7,8 +7,11 @@ import jieba
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import connection
 
-from project.setup_database import *
+import project.setup_database
+from bdbk.models import InfoboxTuple as BaiduInfoboxTuple
+from processor.models import SimilarNamedEntity
 from textutils.unicode_classifier import is_good_char
+from zhwiki.models import Relation as ZhWikiRelation
 
 jieba.initialize()
 
@@ -37,14 +40,14 @@ def is_identity_content(str1, str2, coef=0.8):
 ref_regx = re.compile(r'\[\d+\]')
 link_regx = re.compile(r'\{\{link\:.*?\|(.*?)\}\}')
 
-def process_name(bdne, zhwikine):
+def process_name(bdbk_id, zhwiki_id, threshold=1):
     def preprocess_content(content):
         content = re.sub(ref_regx, '', x.content)
         content = re.sub(link_regx, lambda x: x.group(1), x.content)
         return content
 
-    bdr = BaiduRelation.objects.filter(named_entity_id=bdne).all()
-    zwr = ZhWikiRelation.objects.filter(named_entity_id=zhwikine).all()
+    bdr = BaiduInfoboxTuple.objects.filter(named_entity_id=bdbk_id).all()
+    zwr = ZhWikiRelation.objects.filter(named_entity_id=zhwiki_id).all()
 
     bdr = [preprocess_content(x.content) for x in bdr]
     # print '\n'.join(bdr)
@@ -57,27 +60,47 @@ def process_name(bdne, zhwikine):
         for j in bdr:
             if is_identity_content(i, j):
                 common_tuples += 1
-                print '-' * 20
-                print i
-                print j
 
-    print 'Result: %d/(%d,%d)' % (common_tuples, len(bdr), len(zwr))
-    return common_tuples > 0
+    return common_tuples >= threshold, common_tuples, len(bdr), len(zwr)
 
 if __name__ == '__main__':
-    for i in ZhWikiNamedEntity.objects.iterator():
-        page_name = i.name
-        if '_' in page_name:
-            page_name = page_name[:page_name.rfind('_')]
+    import argparse
 
-        try:
-            # TODO: ambiguous search
-            j = BaiduNamedEntity.objects.get(name=page_name)
-            if process_name(j.pk, i.pk):
-                print page_name, 'looks the same'
-                raw_input()
-            else:
-                print page_name, 'looks different'
-        except ObjectDoesNotExist as e:
-            print page_name, 'not found in baidu baike'
-            pass
+    parser = argparse.ArgumentParser(
+        description='Merge named entities from baidu and zhwiki that look the same.')
+    parser.add_argument('--log', required=True, help='log file name.')
+
+    args = parser.parse_args()
+    log_fn = args.log
+
+    from project.setup_logging import setup as setup_logger
+    logging = setup_logger(log_fn)
+    logging.info('Starting merger...')
+
+    def get_pages_with_same_name():
+        cursor = connection.cursor()
+        # cursor.execute("SELECT count(*) FROM zhwiki_namedentity \
+        #     INNER JOIN bdbk_namedentity \
+        #     ON zhwiki_namedentity.name=bdbk_namedentity.name")
+        # row = cursor.fetchone()
+        # row_count = row[0]
+        # logging.info('There are %d same entities')
+
+        cursor.execute("SELECT bdbk_namedentity.id, zhwiki_namedentity.id, zhwiki_namedentity.search_term \
+            FROM zhwiki_namedentity \
+            INNER JOIN bdbk_namedentity \
+            ON UPPER(zhwiki_namedentity.name)=UPPER(bdbk_namedentity.name)")
+
+        result = cursor.fetchall()
+        return result
+
+    pages = get_pages_with_same_name()
+    logging.info('There are %d pages with same name', len(pages))
+
+    for bdbk_id, zhwiki_id, page_name in pages:
+        success, common, len_left, len_right =\
+            process_name(bdbk_id, zhwiki_id)
+
+        logging.info('%s looks %s (%d of [%d,%d])', 
+            page_name, 'the same' if success else 'different',
+            common, len_left, len_right)
