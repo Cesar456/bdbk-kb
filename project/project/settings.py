@@ -21,5 +21,5 @@ else:
     }
 
 SECRET_KEY = '_mw2k_abk#x97bc#_w*fb%&k#uw9_3*63@3kzl(2hb)!lbi8j$'
-INSTALLED_APPS = ['bdbk', 'zhwiki']
+INSTALLED_APPS = ['bdbk', 'zhwiki', 'processor']
 MIDDLEWARE_CLASSES = []
