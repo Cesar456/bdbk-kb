@@ -2,6 +2,8 @@
 
 import os
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings")
+
 import django
 from django.db import models
 
@@ -12,9 +14,5 @@ from bdbk.models import Verb as BaiduVerb
 from zhwiki.models import NamedEntity as ZhWikiNamedEntity
 from zhwiki.models import Relation as ZhWikiRelation
 from zhwiki.models import Verb as ZhWikiVerb
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings")
-
-
 
 django.setup()
