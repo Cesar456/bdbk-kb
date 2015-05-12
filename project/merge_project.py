@@ -106,6 +106,11 @@ if __name__ == '__main__':
     logging.info('There are %d pages with same name', len(pages))
 
     for bdbk_id, zhwiki_id, page_name in pages:
+        if SimilarNamedEntity.objects.\
+            filter(bdbk_id=bdbk_id, zhwiki_id=zhwiki_id).\
+            count() > 0:
+            continue
+            
         success, common, len_left, len_right =\
             process_name(bdbk_id, zhwiki_id)
 
@@ -113,3 +118,6 @@ if __name__ == '__main__':
             page_name, bdbk_id, zhwiki_id,
             'the same' if success else 'different',
             common, len_left, len_right)
+
+        if success:
+            SimilarNamedEntity.objects.get_or_create(bdbk_id=bdbk_id, zhwiki_id=zhwiki_id)
