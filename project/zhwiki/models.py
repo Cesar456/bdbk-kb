@@ -3,13 +3,14 @@ from django.db import models
 
 # every time version number is updated, 
 # data migration must be performed
-# version: 1
+# version: 2
 
 class Verb(models.Model):
     name = models.CharField(max_length=255, db_index=True)
 
 class NamedEntity(models.Model):
     name = models.CharField(max_length=255, db_index=True)
+    search_term = models.CharField(max_length=255, db_index=True)
     neid = models.IntegerField()
 
 class Relation(models.Model):
