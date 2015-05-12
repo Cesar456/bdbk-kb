@@ -2,6 +2,7 @@
 # This script converts raw tuples into sql inserts, 
 # using django's powerful ORM framework
 
+import re
 import pickle
 import sys
 
@@ -58,7 +59,10 @@ if __name__ == '__main__':
     def process_line_zhwiki(line):
         neid, vid, targetid, ne, verb, target = line.rstrip().split('\t')
         if ne not in ne_dict:
-            n = ZhWikiNamedEntity(name=ne, neid=int(neid))
+            real_ne_name = re.match(r'(.*?)\(.*?\)', ne)
+            n = ZhWikiNamedEntity(name=ne, 
+                neid=int(neid), 
+                search_term=ne if not real_ne_name else real_ne_name.group(1))
             n.save()
             ne_dict[ne] = n.pk
 
