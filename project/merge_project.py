@@ -69,9 +69,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Merge named entities from baidu and zhwiki that look the same.')
     parser.add_argument('--log', required=True, help='log file name.')
+    parser.add_argument('--icase', type=bool, help='case-insensitive compare between page title.')
 
     args = parser.parse_args()
     log_fn = args.log
+    icase = args.icase
 
     from project.setup_logging import setup as setup_logger
     logging = setup_logger(log_fn)
@@ -86,10 +88,16 @@ if __name__ == '__main__':
         # row_count = row[0]
         # logging.info('There are %d same entities')
 
-        cursor.execute("SELECT bdbk_namedentity.id, zhwiki_namedentity.id, zhwiki_namedentity.search_term \
-            FROM zhwiki_namedentity \
-            INNER JOIN bdbk_namedentity \
-            ON UPPER(zhwiki_namedentity.name)=UPPER(bdbk_namedentity.name)")
+        if icase:
+            cursor.execute("SELECT bdbk_namedentity.id, zhwiki_namedentity.id, zhwiki_namedentity.search_term \
+                FROM zhwiki_namedentity \
+                INNER JOIN bdbk_namedentity \
+                ON UPPER(zhwiki_namedentity.search_term)=UPPER(bdbk_namedentity.search_term)")
+        else:
+            cursor.execute("SELECT bdbk_namedentity.id, zhwiki_namedentity.id, zhwiki_namedentity.search_term \
+                FROM zhwiki_namedentity \
+                INNER JOIN bdbk_namedentity \
+                ON zhwiki_namedentity.search_term=bdbk_namedentity.search_term")
 
         result = cursor.fetchall()
         return result
@@ -101,6 +109,7 @@ if __name__ == '__main__':
         success, common, len_left, len_right =\
             process_name(bdbk_id, zhwiki_id)
 
-        logging.info('%s looks %s (%d of [%d,%d])', 
-            page_name, 'the same' if success else 'different',
+        logging.info('%s(bdbk:%d, zhwiki:%d) looks %s (%d of [%d,%d])', 
+            page_name, bdbk_id, zhwiki_id,
+            'the same' if success else 'different',
             common, len_left, len_right)
