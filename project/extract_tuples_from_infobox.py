@@ -134,7 +134,6 @@ if __name__ == '__main__':
     from dbutils.baidu_database import BaiduDatabase
     import project.setup_database
     from bdbk.models import *
-    from django.db import connection
     import time
 
     parser = argparse.ArgumentParser(
