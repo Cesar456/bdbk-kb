@@ -2,6 +2,7 @@
 
 import os
 import random
+
 from dbutils.baidu_database import *
 
 if __name__ == '__main__':

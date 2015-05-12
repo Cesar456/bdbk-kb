@@ -1,11 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf8 -*-
 
-from textutils.unicode_classifier import is_good_char
-from project.setup_database import *
-from django.core.exceptions import ObjectDoesNotExist
-import jieba
 import re
+
+import jieba
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import connection
+
+from project.setup_database import *
+from textutils.unicode_classifier import is_good_char
+
 jieba.initialize()
 
 def is_identity_content(str1, str2, coef=0.8):

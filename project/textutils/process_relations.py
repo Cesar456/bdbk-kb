@@ -3,6 +3,7 @@
 
 import re
 import sys
+
 from unicode_classifier import *
 
 closure = re.compile(\

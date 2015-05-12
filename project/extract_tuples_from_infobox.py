@@ -3,13 +3,16 @@
 # This script reads baidu baike data, and parses its infobox, produces
 # tuples of the name entities
 
-from scrapy.http import TextResponse
-import re
-import os
 import gzip
-import sys
 import logging
+import os
+import re
+import sys
+
+from scrapy.http import TextResponse
+
 from textutils.process_relations import cleanup_verb
+
 
 class Extractor(object):
     link_regx = re.compile(r'href=["\']*([^"\']+)["\']*')

@@ -1,5 +1,6 @@
 from django.db import models
 
+
 # every time version number is updated, 
 # data migration must be performed
 # version: 4

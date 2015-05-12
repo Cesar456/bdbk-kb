@@ -2,9 +2,11 @@
 # This script converts raw tuples into sql inserts, 
 # using django's powerful ORM framework
 
-import sys
 import pickle
+import sys
+
 from project.setup_database import *
+
 
 class NamedEntityDict(object):
     def __init__(self, dict_fn=None):
@@ -86,4 +88,4 @@ if __name__ == '__main__':
             try:
                 process_line_zhwiki(line.decode('utf8'))
             except Exception as e:
-                logging.error('Problem encountered when processing line #%d, %r\n', line_counter, e)
+                logging.error('Problem encountered when processing line #%d, %r', line_counter, e)

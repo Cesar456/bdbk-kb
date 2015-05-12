@@ -1,6 +1,7 @@
 #!/usr/bin/python
-import os
 import gzip
+import os
+
 
 class BaiduDatabase(object):
     def __init__(self, dir, db_name):

@@ -1,5 +1,6 @@
 import logging
 
+
 def setup(logfn):
     logFormatter = logging.Formatter("%(asctime)s [%(levelname)-4.4s]  %(message)s")
     rootLogger = logging.getLogger()
