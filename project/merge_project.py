@@ -40,7 +40,7 @@ def is_identity_content(str1, str2, coef=0.8):
 ref_regx = re.compile(r'\[\d+\]')
 link_regx = re.compile(r'\{\{link\:.*?\|(.*?)\}\}')
 
-def process_name(bdbk_id, zhwiki_id, threshold=1):
+def process_name(bdbk_id, zhwiki_id, threshold=0.5):
     def preprocess_content(content):
         content = re.sub(ref_regx, '', x.content)
         content = re.sub(link_regx, lambda x: x.group(1), x.content)
@@ -61,7 +61,7 @@ def process_name(bdbk_id, zhwiki_id, threshold=1):
             if is_identity_content(i, j):
                 common_tuples += 1
 
-    return common_tuples >= threshold, common_tuples, len(bdr), len(zwr)
+    return common_tuples >= (len(bdr)+len(zwr))*threshold/2, common_tuples, len(bdr), len(zwr)
 
 if __name__ == '__main__':
     import argparse
@@ -120,4 +120,4 @@ if __name__ == '__main__':
             common, len_left, len_right)
 
         if success:
-            SimilarNamedEntity.objects.get_or_create(bdbk_id=bdbk_id, zhwiki_id=zhwiki_id)
+            SimilarNamedEntity.objects.get_or_create(bdbk_id=bdbk_id, zhwiki_id=zhwiki_id, common_tuple_count=common)
