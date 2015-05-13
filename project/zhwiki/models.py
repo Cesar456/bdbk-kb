@@ -1,5 +1,7 @@
 from django.db import models
+import re
 
+ne_regx = re.compile(r'^(.*?)_\(.*?\)$')
 
 # every time version number is updated, 
 # data migration must be performed
@@ -12,6 +14,13 @@ class NamedEntity(models.Model):
     name = models.CharField(max_length=255, db_index=True)
     search_term = models.CharField(max_length=255, db_index=True)
     neid = models.IntegerField()
+
+    def extract_search_term(self):
+        mch = re.match(ne_regx, self.name)
+        if mch:
+            self.search_term = mch.group(1)
+        else:
+            self.search_term = self.name
 
 class Relation(models.Model):
     named_entity = models.ForeignKey('NamedEntity', db_index=True)
