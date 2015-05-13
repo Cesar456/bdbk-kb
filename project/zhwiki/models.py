@@ -19,3 +19,8 @@ class Relation(models.Model):
     # if not content_neid, then content != ''
     content_neid = models.IntegerField(db_index=True, blank=True, null=True)
     content = models.TextField(default='')
+
+class NamedEntityAlias(models.Model):
+    # NamedEntity.neid
+    real_neid = models.IntegerField()
+    alias_neid = models.IntegerField()
