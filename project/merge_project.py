@@ -69,11 +69,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Merge named entities from baidu and zhwiki that look the same.')
     parser.add_argument('--log', required=True, help='log file name.')
+    parser.add_argument('--zhwiki-alias', type=bool, help='using zhwiki alias table.')
     parser.add_argument('--icase', type=bool, help='case-insensitive compare between page title.')
 
     args = parser.parse_args()
     log_fn = args.log
     icase = args.icase
+    zhwiki_alias = args.zhwiki_alias
 
     from project.setup_logging import setup as setup_logger
     logging = setup_logger(log_fn)
@@ -88,16 +90,22 @@ if __name__ == '__main__':
         # row_count = row[0]
         # logging.info('There are %d same entities')
 
-        if icase:
-            cursor.execute("SELECT bdbk_namedentity.id, zhwiki_namedentity.id, zhwiki_namedentity.search_term \
-                FROM zhwiki_namedentity \
-                INNER JOIN bdbk_namedentity \
-                ON UPPER(zhwiki_namedentity.search_term)=UPPER(bdbk_namedentity.search_term)")
+        if zhwiki_alias:
+            cursor.execute("SELECT bdbk_namedentity.id, zhwiki_namedentitynamedalias.real_neid\
+                    FROM zhwiki_namedentitynamedalias\
+                    INNER JOIN bdbk_namedentity \
+                    ON UPPER(zhwiki_namedentitynamedalias.alias)=UPPER(bdbk_namedentity.search_term)")
         else:
-            cursor.execute("SELECT bdbk_namedentity.id, zhwiki_namedentity.id, zhwiki_namedentity.search_term \
-                FROM zhwiki_namedentity \
-                INNER JOIN bdbk_namedentity \
-                ON zhwiki_namedentity.search_term=bdbk_namedentity.search_term")
+            if icase:
+                cursor.execute("SELECT bdbk_namedentity.id, zhwiki_namedentity.id, zhwiki_namedentity.search_term \
+                    FROM zhwiki_namedentity \
+                    INNER JOIN bdbk_namedentity \
+                    ON UPPER(zhwiki_namedentity.search_term)=UPPER(bdbk_namedentity.search_term)")
+            else:
+                cursor.execute("SELECT bdbk_namedentity.id, zhwiki_namedentity.id, zhwiki_namedentity.search_term \
+                    FROM zhwiki_namedentity \
+                    INNER JOIN bdbk_namedentity \
+                    ON zhwiki_namedentity.search_term=bdbk_namedentity.search_term")
 
         result = cursor.fetchall()
         return result
