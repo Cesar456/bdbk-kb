@@ -91,10 +91,12 @@ if __name__ == '__main__':
         # logging.info('There are %d same entities')
 
         if zhwiki_alias:
-            cursor.execute("SELECT bdbk_namedentity.id, zhwiki_namedentitynamedalias.real_neid\
+            cursor.execute("SELECT bdbk_namedentity.id, zhwiki_namedentity.id, zhwiki_namedentity.search_term\
                     FROM zhwiki_namedentitynamedalias\
                     INNER JOIN bdbk_namedentity \
-                    ON UPPER(zhwiki_namedentitynamedalias.alias)=UPPER(bdbk_namedentity.search_term)")
+                    ON zhwiki_namedentitynamedalias.alias=bdbk_namedentity.search_term\
+                    INNER JOIN zhwiki_namedentity\
+                    ON zhwiki_namedentitynamedalias.real_neid=zhwiki_namedentity.neid")
         else:
             if icase:
                 cursor.execute("SELECT bdbk_namedentity.id, zhwiki_namedentity.id, zhwiki_namedentity.search_term \
