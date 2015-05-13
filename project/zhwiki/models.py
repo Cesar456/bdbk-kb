@@ -5,7 +5,7 @@ ne_regx = re.compile(r'^(.*?)_\(.*?\)$')
 
 # every time version number is updated, 
 # data migration must be performed
-# version: 2
+# version: 3
 
 class Verb(models.Model):
     name = models.CharField(max_length=255, db_index=True)
@@ -34,7 +34,7 @@ class Relation(models.Model):
     content_neid = models.IntegerField(db_index=True, blank=True, null=True)
     content = models.TextField(default='')
 
-class NamedEntityAlias(models.Model):
+class NamedEntityNamedAlias(models.Model):
     # NamedEntity.neid
     real_neid = models.IntegerField()
-    alias_neid = models.IntegerField()
+    alias = models.CharField(max_length=255)
