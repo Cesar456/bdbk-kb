@@ -22,6 +22,11 @@ class NamedEntity(models.Model):
         else:
             self.search_term = self.name
 
+    def save(self, *args, **kwargs):
+        if not self.search_term:
+            self.extract_search_term()
+        super(NamedEntity, self).save(*args, **kwargs)
+
 class Relation(models.Model):
     named_entity = models.ForeignKey('NamedEntity', db_index=True)
     verb = models.ForeignKey('Verb', db_index=True)
