@@ -6,10 +6,6 @@ from SPARQLWrapper import JSON, SPARQLWrapper
 class SparQLVar(str):
     pass
 
-class SparQLURI(SparQLVar):
-    def sparql(self):
-        return '<%s>' % super(SparQLURI, self).__str__()
-
 class SparQLLiteral(SparQLVar):
     def __new__(cls, literal, *args, **kwargs):
         if isinstance(literal, unicode):
@@ -25,6 +21,10 @@ class SparQLLiteral(SparQLVar):
 
     def sparql(self):
         return '"%s"' % super(SparQLLiteral, self).__str__()
+
+class SparQLURI(SparQLLiteral):
+    def sparql(self):
+        return '<%s>' % super(SparQLURI, self).__str__()
 
 class SparQL(object):
     def __init__(self, sparql_endpoint, default_graph_uri_name):
