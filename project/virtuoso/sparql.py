@@ -11,15 +11,27 @@ class SparQLURI(SparQLVar):
         return '<%s>' % super(SparQLURI, self).__str__()
 
 class SparQLLiteral(SparQLVar):
+    def __new__(cls, literal, *args, **kwargs):
+        if isinstance(literal, unicode):
+            return super(SparQLLiteral, cls).__new__(cls, 
+                literal.encode('utf8'),
+                *args,
+                **kwargs)
+        else:
+            return super(SparQLLiteral, cls).__new__(cls, 
+                literal,
+                *args,
+                **kwargs)
+
     def sparql(self):
         return '"%s"' % super(SparQLLiteral, self).__str__()
 
 class SparQL(object):
     def __init__(self, sparql_endpoint, default_graph_uri_name):
         self.sparql = SPARQLWrapper(sparql_endpoint)
-        sparql.setMethod('POST')
-        sparql.addParameter('default-graph-uri', default_graph_uri_name)
-        sparql.setReturnFormat(JSON)
+        self.sparql.setMethod('POST')
+        self.sparql.addParameter('default-graph-uri', default_graph_uri_name)
+        self.sparql.setReturnFormat(JSON)
 
     def create_graph(self, graph_uri):
         '''
