@@ -9,6 +9,7 @@ from django.db import connection
 import project.setup_database
 from bdbk.models import NamedEntity
 from virtuoso import sparql
+from project.setup_logging import setup as setup_logging
 
 PREDICT_SEARCH_TERM = 'http://baike.baidu.com/graph#search_term'
 PREDICT_BAIKE_TITLE = 'http://baike.baidu.com/graph#baike_title'
@@ -25,7 +26,7 @@ def delete_all_tuples():
         count +=1
     print 'total:', count
 
-def insert_tuples():
+def insert_tuples(logging):
     cursor = connection.cursor()
     cursor.execute('''
         SELECT COUNT(*) FROM bdbk_infoboxtuple
@@ -52,24 +53,27 @@ def insert_tuples():
         cursor.execute(query % (offset, row_size))
         rows = cursor.fetchall()
         for row in rows:
-            content, page_id, predict = row
-            match = re.match(regx, content)
-            if match is not None:
-                object = sparql.SparQLURI(baike_url_prefix+match.group(1))
-            else:
-                object = sparql.SparQLLiteral(
-                    re.sub(regx,
-                        lambda x:'{{link:%s|%s}}' % (baike_url_prefix+x.group(1), x.group(2)),
-                        content))
+            try:
+                content, page_id, predict = row
+                match = re.match(regx, content)
+                if match is not None:
+                    object = sparql.SparQLURI(baike_url_prefix+match.group(1))
+                else:
+                    object = sparql.SparQLLiteral(
+                        re.sub(regx,
+                            lambda x:'{{link:%s|%s}}' % (baike_url_prefix+x.group(1), x.group(2)),
+                            content))
 
-            sparql_connection.insert(
-                sparql.SparQLURI('http://baike.baidu.com/view/%d.htm' % page_id),
-                sparql.SparQLURI(PREDICT_PREDICT_PREFIX + predict),
-                sparql.SparQLLiteral(object))
+                sparql_connection.insert(
+                    sparql.SparQLURI('http://baike.baidu.com/view/%d.htm' % page_id),
+                    sparql.SparQLURI(PREDICT_PREDICT_PREFIX + predict),
+                    object)
+            except Exception as e:
+                logging.error('exception at %s,%s,%s: %r', content, page_id, predict, e)
 
-        print 'processed', len(rows), 'tuples'
+        logging.info('processed %d tuples', len(rows))
 
-def insert_nes():
+def insert_nes(logging):
     paginator = Paginator(NamedEntity.objects.all(), 1000)
     for page in range(1, paginator.num_pages + 1):
         for i in paginator.page(page).object_list:
@@ -77,18 +81,33 @@ def insert_nes():
             title = i.name
             page_id = i.page_id
 
-            url = 'http://baike.baidu.com/view/%d.htm' % page_id
-            sparql_connection.insert(
-                sparql.SparQLURI(url),
-                sparql.SparQLURI(PREDICT_SEARCH_TERM),
-                sparql.SparQLLiteral(search_term))
-            sparql_connection.insert(
-                sparql.SparQLURI(url),
-                sparql.SparQLURI(PREDICT_BAIKE_TITLE),
-                sparql.SparQLLiteral(title))
+            try:
+                url = 'http://baike.baidu.com/view/%d.htm' % page_id
+                sparql_connection.insert(
+                    sparql.SparQLURI(url),
+                    sparql.SparQLURI(PREDICT_SEARCH_TERM),
+                    sparql.SparQLLiteral(search_term))
+                sparql_connection.insert(
+                    sparql.SparQLURI(url),
+                    sparql.SparQLURI(PREDICT_BAIKE_TITLE),
+                    sparql.SparQLLiteral(title))
+            except Exception as e:
+                logging.error('exception at %s,%s,%d', search_term, title, page_id)
 
-        print 'inserted', len(paginator.page(page).object_list), 'pages'
+        logging.info('inserted %d pages', len(paginator.page(page).object_list))
 
-insert_nes()
-insert_tuples()
-delete_all_tuples()
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description='Dump all triples from mysql to virtuoso.')
+    parser.add_argument('--log', required=True, help='log file name.')
+    args = parser.parse_args()
+    log_fn = args.log
+
+    logging = setup_logging(log_fn)
+
+    # delete_all_tuples()
+    insert_nes(logging)
+    insert_tuples(logging)
+
