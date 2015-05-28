@@ -20,7 +20,7 @@ class SparQLLiteral(SparQLVar):
                 **kwargs)
 
     def sparql(self):
-        return '"%s"' % super(SparQLLiteral, self).__str__()
+        return '"%s"' % super(SparQLLiteral, self).__str__().replace('"', '\\"')
 
 class SparQLURI(SparQLLiteral):
     def sparql(self):
