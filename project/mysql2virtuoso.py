@@ -52,49 +52,57 @@ def insert_tuples(logging):
     for offset in range(0, total_count, row_size):
         cursor.execute(query % (offset, row_size))
         rows = cursor.fetchall()
+        subjects = []
+        predicts = []
+        objects = []
         for row in rows:
-            try:
-                content, page_id, predict = row
-                match = re.match(regx, content)
-                if match is not None:
-                    object = sparql.SparQLURI(baike_url_prefix+match.group(1))
-                else:
-                    object = sparql.SparQLLiteral(
-                        re.sub(regx,
-                            lambda x:'{{link:%s|%s}}' % (baike_url_prefix+x.group(1), x.group(2)),
-                            content))
+            content, page_id, predict = row
+            match = re.match(regx, content)
+            if match is not None:
+                object = sparql.SparQLURI(baike_url_prefix+match.group(1))
+            else:
+                object = sparql.SparQLLiteral(
+                    re.sub(regx,
+                        lambda x:'{{link:%s|%s}}' % (baike_url_prefix+x.group(1), x.group(2)),
+                        content))
 
-                sparql_connection.insert(
-                    sparql.SparQLURI('http://baike.baidu.com/view/%d.htm' % page_id),
-                    sparql.SparQLURI(PREDICT_PREDICT_PREFIX + predict),
-                    object)
-            except Exception as e:
-                logging.error('exception at %s,%s,%s: %r', content, page_id, predict, e)
-
-        logging.info('processed %d tuples', len(rows))
+            subjects.append(sparql.SparQLURI('http://baike.baidu.com/view/%d.htm' % page_id))
+            predicts.append(sparql.SparQLURI(PREDICT_PREDICT_PREFIX + predict))
+            objects.append(object)
+    
+        try:
+            sparql_connection.batch_insert(subjects, predicts, objects)    
+        except Exception as e:
+            logging.error('exception at offset %d: %r', offset, e)
+        else:
+            logging.info('processed %d tuples', len(rows))
 
 def insert_nes(logging):
     paginator = Paginator(NamedEntity.objects.all(), 1000)
     for page in range(1, paginator.num_pages + 1):
+        subjects = []
+        predicts = []
+        objects = []
         for i in paginator.page(page).object_list:
             search_term = i.search_term
             title = i.name
             page_id = i.page_id
 
-            try:
-                url = 'http://baike.baidu.com/view/%d.htm' % page_id
-                sparql_connection.insert(
-                    sparql.SparQLURI(url),
-                    sparql.SparQLURI(PREDICT_SEARCH_TERM),
-                    sparql.SparQLLiteral(search_term))
-                sparql_connection.insert(
-                    sparql.SparQLURI(url),
-                    sparql.SparQLURI(PREDICT_BAIKE_TITLE),
-                    sparql.SparQLLiteral(title))
-            except Exception as e:
-                logging.error('exception at %s,%s,%d', search_term, title, page_id)
+            url = 'http://baike.baidu.com/view/%d.htm' % page_id
+            subjects.append(sparql.SparQLURI(url))
+            predicts.append(sparql.SparQLURI(PREDICT_SEARCH_TERM))
+            objects.append(sparql.SparQLLiteral(search_term))
 
-        logging.info('inserted %d pages', len(paginator.page(page).object_list))
+            subjects.append(sparql.SparQLURI(url))
+            predicts.append(sparql.SparQLURI(PREDICT_BAIKE_TITLE))
+            objects.append(sparql.SparQLLiteral(title))
+
+        try:
+            sparql_connection.batch_insert(subjects, predicts, objects)
+        except Exception as e:
+            logging.error('failed at page: %d: %r', page, e)
+        else:
+            logging.info('inserted %d pages', len(paginator.page(page).object_list))
 
 if __name__ == '__main__':
     import argparse
