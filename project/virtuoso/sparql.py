@@ -49,6 +49,32 @@ class SparQL(object):
 
         results = self.sparql.query().convert()
 
+    def batch_insert(self, subjects, predicts, objects):
+        '''
+        Insert a lot of tuples into graph. Returns None.
+
+        Example:
+            batch_insert(sparql,
+                [SparQLURI("..."), SparQLURI("...")],
+                [SparQLVar("ns:title"), SparQLVar("ns:title")],
+                [SparQLVar("content"), SparQLVar("content")])
+        '''
+
+        assert all(isinstance(x, SparQLVar) for x in subjects)
+        assert all(isinstance(x, SparQLVar) for x in predicts)
+        assert all(isinstance(x, SparQLVar) for x in objects)
+        assert len(subjects) == len(predicts) and len(predicts) == len(objects)
+
+        query = []
+        for subject, predict, object in zip(subjects, predicts, objects):
+            query.append('%s %s %s' % (subject.sparql(), predict.sparql(), object.sparql()))
+
+        self.sparql.setQuery('''
+            INSERT DATA { %s }
+            ''' % ' . '.join(query))
+
+        results = self.sparql.query().convert()
+        
     def insert(self, subject, predict, object):
         '''
         Insert a tuple into graph. Returns None.
