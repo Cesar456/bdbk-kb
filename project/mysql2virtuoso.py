@@ -28,6 +28,9 @@ def delete_all_tuples():
 
 def insert_tuples(logging):
     cursor = connection.cursor()
+
+    logging.info('couting objects...')
+
     cursor.execute('''
         SELECT COUNT(*) FROM bdbk_infoboxtuple
         ''')
@@ -50,6 +53,9 @@ def insert_tuples(logging):
     baike_url_prefix = 'http://baike.baidu.com'
 
     for offset in range(0, total_count, row_size):
+        
+        logging.info('fetching objects from database...')
+
         cursor.execute(query % (offset, row_size))
         rows = cursor.fetchall()
         subjects = []
@@ -79,10 +85,14 @@ def insert_tuples(logging):
 
 def insert_nes(logging):
     paginator = Paginator(NamedEntity.objects.all(), 1000)
+    logging.info('couting objects...')
     for page in range(1, paginator.num_pages + 1):
         subjects = []
         predicts = []
         objects = []
+
+        logging.info('fetching objects from database...')
+
         for i in paginator.page(page).object_list:
             search_term = i.search_term
             title = i.name
@@ -110,12 +120,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Dump all triples from mysql to virtuoso.')
     parser.add_argument('--log', required=True, help='log file name.')
+    parser.add_argument('--clear', type=boolean, help='clear the database.')
     args = parser.parse_args()
     log_fn = args.log
+    clear = args.clear
 
     logging = setup_logging(log_fn)
 
-    # delete_all_tuples()
+    if clear:
+        delete_all_tuples()
     insert_nes(logging)
     insert_tuples(logging)
 
