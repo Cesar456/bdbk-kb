@@ -1,7 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf8 -*-
-import re
-
 from SPARQLWrapper import JSON, SPARQLWrapper
 
 
@@ -22,7 +20,7 @@ class SparQLLiteral(SparQLVar):
                 **kwargs)
 
     def sparql(self):
-        return '"%s"' % re.escape(super(SparQLLiteral, self).__str__())
+        return '"%s"' % super(SparQLLiteral, self).__str__().replace('\\', '\\\\').replace('"', '\\"')
 
 class SparQLURI(SparQLLiteral):
     def sparql(self):
