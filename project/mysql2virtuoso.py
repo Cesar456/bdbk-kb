@@ -88,7 +88,7 @@ def insert_tuples(logging):
             logging.info('processed %d tuples', len(rows))
 
 def insert_nes(logging):
-    paginator = Paginator(NamedEntity.objects.all(), 1000)
+    paginator = Paginator(NamedEntity.objects.all(), 500)
     logging.info('couting objects...')
     for page in range(1, paginator.num_pages + 1):
         subjects = []
