@@ -33,6 +33,13 @@ class SparQL(object):
         self.sparql.addParameter('default-graph-uri', default_graph_uri_name)
         self.sparql.setReturnFormat(JSON)
 
+    def execute(self, command):
+        '''
+        Execute a SPARQL command
+        '''
+        self.sparql.setQuery(command)
+        return self.sparql.query().convert()
+
     def create_graph(self, graph_uri):
         '''
         Create a new named graph with uri. Returns None.
@@ -74,7 +81,7 @@ class SparQL(object):
             ''' % ' . '.join(query))
 
         results = self.sparql.query().convert()
-        
+
     def insert(self, subject, predict, object):
         '''
         Insert a tuple into graph. Returns None.

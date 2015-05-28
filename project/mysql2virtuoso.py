@@ -26,6 +26,10 @@ def delete_all_tuples():
         count +=1
     print 'total:', count
 
+def clear_graph():
+    sparql_connection.execute('CLEAR GRAPH <http://baike.baidu.com>')
+    return 'graph cleared'
+
 def insert_tuples(logging):
     cursor = connection.cursor()
 
@@ -54,7 +58,7 @@ def insert_tuples(logging):
 
     for offset in range(0, total_count, row_size):
 
-        logging.info('fetching objects from database...')
+        logging.info('fetching objects from database (%d/%d)...', offset, total_count)
 
         cursor.execute(query % (offset, row_size))
         rows = cursor.fetchall()
@@ -91,7 +95,7 @@ def insert_nes(logging):
         predicts = []
         objects = []
 
-        logging.info('fetching objects from database...')
+        logging.info('fetching objects from database (%d/%d)...', page, paginator.num_pages)
 
         for i in paginator.page(page).object_list:
             search_term = i.search_term
@@ -128,7 +132,7 @@ if __name__ == '__main__':
     logging = setup_logging(log_fn)
 
     if clear:
-        delete_all_tuples()
+        clear_graph()
     insert_nes(logging)
     insert_tuples(logging)
 
