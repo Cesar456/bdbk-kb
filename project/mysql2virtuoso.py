@@ -53,7 +53,7 @@ def insert_tuples(logging):
     baike_url_prefix = 'http://baike.baidu.com'
 
     for offset in range(0, total_count, row_size):
-        
+
         logging.info('fetching objects from database...')
 
         cursor.execute(query % (offset, row_size))
@@ -120,7 +120,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Dump all triples from mysql to virtuoso.')
     parser.add_argument('--log', required=True, help='log file name.')
-    parser.add_argument('--clear', type=boolean, help='clear the database.')
+    parser.add_argument('--clear', type=bool, help='clear the database.')
     args = parser.parse_args()
     log_fn = args.log
     clear = args.clear
