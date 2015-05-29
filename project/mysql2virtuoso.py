@@ -41,7 +41,7 @@ def insert_tuples(triple_fn, logging):
                 # some triples have NULL value
                 continue
 
-            page_id, predict, content = line.split('\t')
+            page_id, predict, content = line.split('\t', 2)
 
             match = re.match(regx, content)
             if match is not None:
@@ -92,7 +92,7 @@ def insert_nes(ne_fn, logging):
 
         for line in lines:
             line = line.rstrip()
-            page_id, title, search_term = line.split('\t')
+            page_id, title, search_term = line.split('\t', 2)
 
             url = 'http://baike.baidu.com/view/%s.htm' % page_id
             subjects.append(sparql.SparQLURI(url))
