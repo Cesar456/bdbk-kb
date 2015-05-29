@@ -36,6 +36,11 @@ def insert_tuples(triple_fn, logging):
 
         for line in lines:
             line = line.rstrip()
+
+            if line.count('\t') < 2:
+                # some triples have NULL value
+                continue
+
             page_id, predict, content = line.split('\t')
 
             match = re.match(regx, content)
@@ -132,8 +137,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Dump all triples from mysql to virtuoso.')
     parser.add_argument('--log', required=True, help='log file name.')
-    parser.add_argument('--tuple-file', required=True, help='triple dump from database.')
-    parser.add_argument('--ne-file', required=True, help='ne dump from database.')
+    parser.add_argument('--tuple-file', help='triple dump from database.')
+    parser.add_argument('--ne-file', help='ne dump from database.')
     args = parser.parse_args()
     log_fn = args.log
     tuple_file = args.tuple_file
@@ -141,8 +146,10 @@ if __name__ == '__main__':
 
     logging = setup_logging(log_fn)
 
-    if clear:
-        clear_graph()
-    insert_nes(ne_file, logging)
-    insert_tuples(tuple_file, logging)
+    if ne_file:
+        logging.info('inserting named entities...')
+        insert_nes(ne_file, logging)
+    if tuple_file:
+        logging.info('inserting triples...')
+        insert_tuples(tuple_file, logging)
 
