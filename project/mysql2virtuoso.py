@@ -31,7 +31,7 @@ def insert_tuples(triple_fn, logging):
         predicts = []
         objects = []
 
-        regx = re.compile(r'^\{\{link:(.*?)\|(.*?)\}\}$')
+        regx = re.compile(r'^\{\{link:([^|]*?)\|([^}]*?)\}\}$')
         baike_url_prefix = 'http://baike.baidu.com'
 
         for line in lines:
