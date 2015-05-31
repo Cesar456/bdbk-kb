@@ -32,6 +32,7 @@ def insert_tuples(triple_fn, logging):
         objects = []
 
         regx = re.compile(r'^\{\{link:([^|]*?)\|([^}]*?)\}\}$')
+        regx2 = re.compile(r'\{\{link:([^|]*?)\|([^}]*?)\}\}')
         baike_url_prefix = 'http://baike.baidu.com'
 
         for line in lines:
@@ -48,7 +49,7 @@ def insert_tuples(triple_fn, logging):
                 object = sparql.SparQLURI(baike_url_prefix+match.group(1))
             else:
                 object = sparql.SparQLLiteral(
-                    re.sub(regx,
+                    re.sub(regx2,
                         lambda x:'{{link:%s|%s}}' % (baike_url_prefix+x.group(1), x.group(2)),
                         content))
 
