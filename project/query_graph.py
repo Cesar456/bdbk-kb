@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 import re
 import json
 from virtuoso import sparql
@@ -21,8 +21,8 @@ def query_root(root_title):
         URL, for example, http://localhost/grapher#<something>.
 
         We continue search for nodes that is linked to current ne by its
-        attribute values, that is, for example, when attribute of A has a 
-        link to ne B, then B is fetched and shown to user, but links in 
+        attribute values, that is, for example, when attribute of A has a
+        link to ne B, then B is fetched and shown to user, but links in
         attributes of B will not be shown. After we switch current ne to
         B, the new links will pop up.
 
@@ -55,7 +55,7 @@ def query_root(root_title):
             'predict': str(p),
             'value': re.sub(regx, lambda x:x.group(2), o)
         }
-        
+
         root['attrs'].append(attr)
 
         # find out out links

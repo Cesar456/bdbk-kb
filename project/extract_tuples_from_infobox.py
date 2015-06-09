@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 # This script reads baidu baike data, and parses its infobox, produces
 # tuples of the name entities
 

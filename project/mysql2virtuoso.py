@@ -1,14 +1,14 @@
 #!/usr/bin/python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 
 import re
 
 from virtuoso import sparql
 from project.setup_logging import setup as setup_logging
 
-PREDICT_SEARCH_TERM = 'http://baike.baidu.com/graph#search_term'
-PREDICT_BAIKE_TITLE = 'http://baike.baidu.com/graph#baike_title'
 PREDICT_PREDICT_PREFIX = 'http://baike.baidu.com/predicts#'
+PREDICT_BAIKE_TITLE = 'http://baike.baidu.com/graph#baike_title'
+PREDICT_SEARCH_TERM = 'http://baike.baidu.com/graph#search_term'
 
 sparql_connection = sparql.SparQL('http://localhost:8890/sparql/',
     'http://baike.baidu.com/')
