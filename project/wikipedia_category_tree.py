@@ -2,46 +2,38 @@
 # -*- coding: utf-8 -*-
 
 import json
-import re
-import time
-import urllib2
+import MySQLdb
 
-from lxml import etree
+connection = MySQLdb.connect(host='localhost',
+                             user='root',
+                             passwd='root',
+                             db='zh_wiki')
 
-proxy = urllib2.ProxyHandler({'http': '127.0.0.1:8123'})
-opener = urllib2.build_opener(proxy)
-urllib2.install_opener(opener)
+cursor = db.cursor()
 
-def extract_categories(cat_url):
-    time.sleep(1.0)
-    print 'Downloading', cat_url
-    data = urllib2.urlopen(cat_url).read()
 
-    root = etree.HTML(data)
+def extract_categories(cat_name, cat_seen=[], cat_id=None):
+    if cat_id in cat_seen:
+        print 'Circle reference found for %s, %d' % (cat_name, cat_id)
+        return 1
 
-    sub_cats = []
-    for node in root.findall('.//*[@id="mw-subcategories"]//*[@class="CategoryTreeItem"]'):
-        a = node.find('.//a')
-        cat_name = a.text
-        cat_page_url = 'http://zh.wikipedia.org' + a.get('href')
-        cat_stat_str = node.find('.//span[@dir="ltr"]').text
-        cat_subcat_count = re.findall(ur'(\d+)个分类', cat_stat_str)
-        cat_subpage_count = re.findall(ur'(\d+)个页面', cat_stat_str)
-        cat_subcat_count = int(cat_subcat_count[0]) if len(cat_subcat_count) else 0
-        cat_subpage_count = int(cat_subpage_count[0]) if len(cat_subpage_count) else 0
+    cursor.execute("select page.page_title, page.page_id from categorylinks inner join page on page.page_id=categorylinks.cl_from where categorylinks.cl_type='subcat' and page.page_is_redirect=0 and categorylinks.cl_to='%s'" % cat_url)
 
-        print 'Processing %s, %d subcats, %d subpages' % (cat_name, cat_subcat_count, cat_subpage_count)
+    for sub_cat_name, sub_cat_page_id in cursor.fetchall():
+        sub_cat_page_url = 'http://zh.wikipedia.org/wiki?curid=%d' % sub_cat_page_id
+        cat_seen.append(sub_cat_page_id)
+
+        print 'Processing %s' % sub_cat_name
 
         sub_cats.append({
-            'name': cat_name,
-            'page_url': cat_page_url,
-            'subcat_count': cat_subcat_count,
-            'subpage_count': cat_subpage_count,
-            'subcats': extract_categories(cat_page_url)
+            'name': sub_cat_name,
+            'page_url': sub_cat_page_url,
+            'subcats': extract_categories(sub_cat_name, cat_seen, sub_cat_page_id)
         })
 
     return sub_cats
 
 if __name__ == '__main__':
-    cats = extract_categories('http://zh.wikipedia.org/wiki/Category:%E9%A0%81%E9%9D%A2%E5%88%86%E9%A1%9E')
+    cats = extract_categories('頁面分類')
+    open('data.json', 'w').write(json.dumps(cats))
     print json.dumps(cats)
