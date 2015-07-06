@@ -2,34 +2,58 @@
 # -*- coding: utf-8 -*-
 
 import json
-import MySQLdb
 
-connection = MySQLdb.connect(host='localhost',
-                             user='root',
-                             passwd='root',
-                             db='zh_wiki')
+def read_extracted_db():
+    cat_page_link_dict = {}
+    page_id_to_title_dict = {}
+    f = open('categorylinks_7_subcat__id_category.txt')
+    for line in f:
+        page_id, cat_name = line.rstrip().split(' ', 1)
+        if cat_name not in cat_page_link_dict:
+            cat_page_link_dict[cat_name] = []
 
-cursor = db.cursor()
+        cat_page_link_dict[cat_name].append(page_id)
 
+    f.close()
 
+    f = open('page_0_isredirect__pageid_nsid_title.txt')
+    for line in f:
+        if ' \n' in line:
+            continue
+        page_id, _, page_title = line.rstrip().split(' ', 2)
+        page_id_to_title_dict[page_id] = page_title
+    f.close()
+    return (cat_page_link_dict, page_id_to_title_dict)
+
+cat_dict, page_dict = read_extracted_db()
+
+# Circle reference: 陽明學者->王守仁‎->陽明學->陽明學者‎
 def extract_categories(cat_name, cat_seen=[], cat_id=None):
-    if cat_id in cat_seen:
-        print 'Circle reference found for %s, %d' % (cat_name, cat_id)
-        return 1
+    if cat_name not in cat_dict:
+        return []
+    else:
+        sub_cats = []
 
-    cursor.execute("select page.page_title, page.page_id from categorylinks inner join page on page.page_id=categorylinks.cl_from where categorylinks.cl_type='subcat' and page.page_is_redirect=0 and categorylinks.cl_to='%s'" % cat_url)
+    for sub_cat_page_id in cat_dict[cat_name]:
+        sub_cat_name = page_dict[sub_cat_page_id]
+        sub_cat_page_url = 'http://zh.wikipedia.org/wiki?curid=%s' % sub_cat_page_id
 
-    for sub_cat_name, sub_cat_page_id in cursor.fetchall():
-        sub_cat_page_url = 'http://zh.wikipedia.org/wiki?curid=%d' % sub_cat_page_id
-        cat_seen.append(sub_cat_page_id)
+        # print 'Processing %s' % sub_cat_name
 
-        print 'Processing %s' % sub_cat_name
-
-        sub_cats.append({
-            'name': sub_cat_name,
-            'page_url': sub_cat_page_url,
-            'subcats': extract_categories(sub_cat_name, cat_seen, sub_cat_page_id)
-        })
+        if sub_cat_page_id in cat_seen:
+            print 'Circle reference found for %s, %s' % (cat_name, cat_id)
+            sub_cats.append({
+                'name': sub_cat_name,
+                'page_url': sub_cat_page_url,
+                'subcats': True
+            })
+        else:
+            cat_seen.append(sub_cat_page_id)
+            sub_cats.append({
+                'name': sub_cat_name,
+                'page_url': sub_cat_page_url,
+                'subcats': extract_categories(sub_cat_name, cat_seen, sub_cat_page_id)
+            })
 
     return sub_cats
 
