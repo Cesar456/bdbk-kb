@@ -34,7 +34,7 @@ def extract_hidden_cats():
 
     result, next_page_url = extract_one_page('https://zh.wikipedia.org/w/index.php?title=Category:%E9%9A%90%E8%97%8F%E5%88%86%E7%B1%BB')
     while next_page_url:
-        nr, _ = extract_one_page(next_page_url)
+        nr, next_page_url = extract_one_page(next_page_url)
         result += nr
 
     return result
