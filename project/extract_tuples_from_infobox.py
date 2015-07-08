@@ -148,54 +148,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     src = args.src
 
-    if src == 'page':
-        if not args.page_source:
-            logging.error('page mode specified, but no page source found in console arguments.')
-            sys.exit(1)
-
-    if src == 'archive':
-        archive_dir = args.archive_dir
-        archive_name = args.archive_name
-        if not archive_dir or not archive_name:
-            logging.error('archive mode specified, but no archive found in console arguments.')
-            sys.exit(1)
-
-    if args.log:
-        from project.setup_logging import setup as setup_logger
-        logging = setup_logger(log_fn)
-        logging.info('Source: %s in %s', db_name, dir)
-
-    if src == 'stdin' or src == 'page':
-        if src == 'stdin':
-            inputs = []
-            while True:
-                try:
-                    inputs.append(raw_input())
-                except EOFError as e:
-                    break
-
-            source = '\n'.join(inputs)
-        else:
-            source = open(args.page_source).read()
-
-        info = extractor.extract(0, source)
-        if len(info)==4:
-            print 'Info tuples:'
-            title, search_term, abstract, tuples = info
-            print 'Title:', title
-            print 'Search Term:', search_term
-            print 'Abstract:', abstract
-
-            for tuple in tuples:
-                print '(', tuple[0], ',', tuple[1], ')'
-        elif len(info) == 2:
-            print 'Page Redirect:'
-            title, lemmas = info
-            print 'Title:', title
-            for lemma in lemmas:
-                print '==>', lemma
-
-    elif src == 'archive':
+    def do_data_archive(archive_dir, archive_name):
         db = BaiduDatabase(archive_dir, archive_name)
         verb_dict = {}
 
@@ -248,3 +201,53 @@ if __name__ == '__main__':
                 logging.warning('exception %r: page_id(%d)', e, pid)
 
         db.close()
+
+    if src == 'page':
+        if not args.page_source:
+            logging.error('page mode specified, but no page source found in console arguments.')
+            sys.exit(1)
+
+    if src == 'archive':
+        archive_dir = args.archive_dir
+        archive_name = args.archive_name
+        if not archive_dir or not archive_name:
+            logging.error('archive mode specified, but no archive found in console arguments.')
+            sys.exit(1)
+
+    if args.log:
+        from project.setup_logging import setup as setup_logger
+        logging = setup_logger(log_fn)
+        logging.info('Source: %s in %s', db_name, dir)
+
+    if src == 'stdin' or src == 'page':
+        if src == 'stdin':
+            inputs = []
+            while True:
+                try:
+                    inputs.append(raw_input())
+                except EOFError as e:
+                    break
+
+            source = '\n'.join(inputs)
+        else:
+            source = open(args.page_source).read()
+
+        info = extractor.extract(0, source)
+        if len(info)==4:
+            print 'Info tuples:'
+            title, search_term, abstract, tuples = info
+            print 'Title:', title
+            print 'Search Term:', search_term
+            print 'Abstract:', abstract
+
+            for tuple in tuples:
+                print '(', tuple[0], ',', tuple[1], ')'
+        elif len(info) == 2:
+            print 'Page Redirect:'
+            title, lemmas = info
+            print 'Title:', title
+            for lemma in lemmas:
+                print '==>', lemma
+
+    elif src == 'archive':
+        do_data_archive(archive_dir, archive_name)
