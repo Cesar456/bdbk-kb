@@ -40,7 +40,7 @@ class NamedEntity(models.Model):
 
     name = models.CharField(max_length=255, db_index=True)
     search_term = models.CharField(max_length=255, db_index=True)
-    bdbk_url = models.CharField(max_length=1024, unique=True)
+    bdbk_url = models.CharField(max_length=1024)
     last_modified = models.DateTimeField(null=True, blank=True)
     abstract = models.TextField()
     page_id = models.IntegerField(null=True, blank=True)
