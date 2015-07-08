@@ -48,7 +48,11 @@ class Extractor(object):
                         target += '}}'
 
                     in_href = True
-                    target += '{{link:%s|' % bicontent.xpath('./@href')[0]
+                    href = bicontent.xpath('./@href')
+                    if len(href):
+                        # some links are just clickable HTML of foot-reference,
+                        # so we don't have to include them
+                        target += '{{link:%s|' % href[0]
                 else:
                     if '\n' in bicontent:
                         target += re.sub(r'[\xa0\s\n]', '', bicontent)
