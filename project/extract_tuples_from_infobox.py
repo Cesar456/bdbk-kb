@@ -112,6 +112,18 @@ class Extractor(object):
         return len(html.xpath("//*[@id='lemma-list']")) != 0
 
     def extract(self, page_id, content):
+        '''
+        Returns:
+        (infoboxtuples, lemma_list)
+
+        infoboxtuples -> (title, search_term, abstract, list_of_tuples)
+        list_of_tuples -> [tuple, ...]
+        tuple -> (verb, content)
+
+        lemma_list -> (title, lemmas)
+        lemmas -> [lemma, ...]
+        lemma -> "{{link:<url>|name}"
+        '''
         parser = etree.HTMLParser()
         page = etree.parse(StringIO(content), parser)
 
@@ -119,15 +131,15 @@ class Extractor(object):
         search_term = self.get_search_term(page)
         if not search_term: search_term = title
 
-        if not self.is_lemma_list(page):
-            abstract = self.get_abstract(page)
-            tuples = self.get_tuples(page)
+        # if not self.is_lemma_list(page):
+        abstract = self.get_abstract(page)
+        tuples = self.get_tuples(page)
 
-            return (title, search_term, abstract, tuples)
-        else:
-            lemmas = self.get_lemma_list(page)
+        infoboxtuples = (title, search_term, abstract, tuples)
 
-            return (title, lemmas)
+        lemma_list = (title, self.get_lemma_list(page))
+
+        return (infoboxtuples, lemma_list)
 
 extractor = Extractor()
 
@@ -163,45 +175,45 @@ if __name__ == '__main__':
 
         for purl, plmodified, pcontent in iterator():
             processed_count += 1
-            if processed_count % 1000 == 0:
+            if processed_count % 100 == 0:
                 logging.info('%d processed in %d/sec', processed_count, (processed_count-last_processed)/(time.time()-last_time))
                 last_processed = processed_count
                 last_time = time.time()
 
             try:
                 # FIXME: should arg: pid be removed?
-                info = extractor.extract(0, pcontent)
-                if len(info) == 4:
-                    title, search_term, abstract, tuples = info
-                    if len(tuples) > 0:
-                        ne = NamedEntity(name=title,
-                                         search_term=search_term,
-                                         bdbk_url=purl,
-                                         last_modified=plmodified,
-                                         abstract=abstract)
-                        ne.save()
+                infoboxtuples, lemma_list = extractor.extract(0, pcontent)
 
-                        npk = ne.pk
-                        for tuple in tuples:
+                # infobox tuples:
+                title, search_term, abstract, tuples = infoboxtuples
+                if len(tuples) > 0:
+                    ne = NamedEntity(name=title,
+                                     search_term=search_term,
+                                     bdbk_url=purl,
+                                     last_modified=plmodified,
+                                     abstract=abstract)
+                    ne.save()
 
-                            if tuple[0] not in verb_dict:
-                                v, _ = Verb.objects.get_or_create(name=tuple[0])
-                                verb_dict[tuple[0]] = v.pk
-                                vpk = v.pk
-                            else:
-                                vpk = verb_dict[tuple[0]]
+                    npk = ne.pk
+                    for tuple in tuples:
 
-                            t = InfoboxTuple(named_entity_id=npk,
-                                             content=tuple[1],
-                                             verb_id=vpk)
-                            t.save()
+                        if tuple[0] not in verb_dict:
+                            v, _ = Verb.objects.get_or_create(name=tuple[0])
+                            verb_dict[tuple[0]] = v.pk
+                            vpk = v.pk
+                        else:
+                            vpk = verb_dict[tuple[0]]
 
-                elif len(info) == 2:
-                    title, lemmas = info
-                    for lemma in lemmas:
-                        ner = NamedEntityRedirect(name=title,
-                                                  linked_name=lemma)
-                        ner.save()
+                        t = InfoboxTuple(named_entity_id=npk,
+                                         content=tuple[1],
+                                         verb_id=vpk)
+                        t.save()
+
+                title, lemmas = lemma_list
+                for lemma in lemmas:
+                    ner = NamedEntityRedirect(name=title,
+                                              linked_name=lemma)
+                    ner.save()
 
             except Exception as e:
                 logging.warning('exception %r: page_id(%s)', e, purl)
@@ -266,8 +278,9 @@ if __name__ == '__main__':
 
     if args.log:
         from project.setup_logging import setup as setup_logger
-        logging = setup_logger(log_fn)
-        logging.info('Source: %s in %s', db_name, dir)
+        logging = setup_logger(args.log)
+
+    logging.info('Source: %s', src)
 
     if src == 'stdin' or src == 'page':
         if src == 'stdin':
@@ -300,6 +313,8 @@ if __name__ == '__main__':
                 print '==>', lemma
 
     elif src == 'archive':
+        logging.info('Archive mode: %s in %s', archive_name, archive_dir)
         do_data_archive(archive_dir, archive_name)
     elif src == 'mongodb':
+        logging.info('Mongo DB mode: %s:%d', mongod_host, mongod_port)
         do_mongodb(mongod_host, mongod_port, mongod_list)
