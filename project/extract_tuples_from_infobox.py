@@ -101,14 +101,18 @@ class Extractor(object):
             result.append('{{link:%s|%s}}' % (i.xpath('./@href')[0], i.xpath('./text()')[0]))
         return result
 
+    def is_lemma_list(self, html):
+        return len(html.xpath("//*[@id='lemma-list']")) != 0
+
     def extract(self, page_id, content):
         parser = etree.HTMLParser()
         page = etree.parse(StringIO(content), parser)
 
         title = self.get_title(page)
         search_term = self.get_search_term(page)
+        if not search_term: search_term = title
 
-        if search_term:
+        if not self.is_lemma_list(page):
             abstract = self.get_abstract(page)
             tuples = self.get_tuples(page)
 
