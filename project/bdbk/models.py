@@ -3,7 +3,7 @@ from django.db import models
 
 
 # data migration must be performed on every schema update
-# version: 5
+# version: 6
 
 class Verb(models.Model):
     '''
@@ -16,7 +16,7 @@ class Verb(models.Model):
 
 class NamedEntity(models.Model):
     '''
-    Ver: 1
+    Ver: 2
 
     Database Schema:
     name: the name for this named entity, for names that could be mapped to
@@ -40,8 +40,8 @@ class NamedEntity(models.Model):
 
     name = models.CharField(max_length=255, db_index=True)
     search_term = models.CharField(max_length=255, db_index=True)
-    bdbk_url = models.CharField(max_length=1024)
-    last_modified = models.DateTimeField(blank=True)
+    bdbk_url = models.CharField(max_length=1024, unique=True)
+    last_modified = models.DateTimeField(null=True, blank=True)
     abstract = models.TextField()
     page_id = models.IntegerField()
 
