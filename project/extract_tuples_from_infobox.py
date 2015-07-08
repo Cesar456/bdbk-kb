@@ -53,6 +53,8 @@ class Extractor(object):
                         # some links are just clickable HTML of foot-reference,
                         # so we don't have to include them
                         target += '{{link:%s|' % href[0]
+                    else:
+                        in_href = False
                 else:
                     if '\n' in bicontent:
                         target += re.sub(r'[\xa0\s\n]', '', bicontent)
