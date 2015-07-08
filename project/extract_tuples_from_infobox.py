@@ -3,11 +3,11 @@
 # This script reads baidu baike data, and parses its infobox, produces
 # tuples of the name entities
 
+import datetime
 import gzip
 import logging
 import os
 import re
-import datetime
 import sys
 from StringIO import StringIO
 
@@ -158,6 +158,7 @@ if __name__ == '__main__':
     parser.add_argument('--archive-name', type=str, help='name of the archive(archive mode).')
     parser.add_argument('--mongod-host', type=str, help='host of mongo db server.')
     parser.add_argument('--mongod-port', type=int, help='port of mongo db server.')
+    parser.add_argument('--mongod-from-to', type=str, help='only process part of the docs in mongodb.')
     parser.add_argument('--mongod-list', type=str, help='a list file of _id to extract.')
     parser.add_argument('--log', help='log file name.')
 
@@ -174,6 +175,7 @@ if __name__ == '__main__':
         last_processed = 0
 
         for purl, plmodified, pcontent in iterator():
+            print purl
             processed_count += 1
             if processed_count % 100 == 0:
                 logging.info('%d processed in %d/sec', processed_count, (processed_count-last_processed)/(time.time()-last_time))
@@ -231,10 +233,18 @@ if __name__ == '__main__':
         do_extract(iterator)
         db.close()
 
-    def do_mongodb(mongod_host, mongod_port, mongod_list):
+    def do_mongodb(mongod_host, mongod_port, mongod_from_to, mongod_list):
         import pymongo
         client = pymongo.MongoClient(mongod_host, mongod_port)
         data_set = client.baidu.data
+
+        if mongod_from_to:
+            slice_skip, slice_limit = mongod_from_to.split('-')
+            slice_skip = int(slice_skip)
+            slice_limit = int(slice_limit) - slice_skip
+        else:
+            slice_skip = -1
+            slice_limit = -1
 
         def iterator():
             def convert_date_string(s):
@@ -242,8 +252,12 @@ if __name__ == '__main__':
                 return datetime.datetime(int(year), int(month), int(day))
 
             if not mongod_list:
-                for item in data_set.find():
-                    yield item['actualurl'], convert_date_string(item['lastmodifytime']), item['content']
+                if slice_skip == -1:
+                    for item in data_set.find():
+                        yield item['actualurl'], convert_date_string(item['lastmodifytime']), item['content']
+                else:
+                    for item in data_set.find().skip(slice_skip).limit(slice_limit):
+                        yield item['actualurl'], convert_date_string(item['lastmodifytime']), item['content']
             else:
                 listfile = open(mongod_list)
                 for _id in listfile:
@@ -271,6 +285,7 @@ if __name__ == '__main__':
         mongod_host = args.mongod_host
         mongod_port = args.mongod_port
         mongod_list = args.mongod_list
+        mongod_from_to = args.mongod_from_to
 
         if not mongod_host or not mongod_port:
             logging.error('mongodb mode specified, but no host/port pair given.')
@@ -317,4 +332,4 @@ if __name__ == '__main__':
         do_data_archive(archive_dir, archive_name)
     elif src == 'mongodb':
         logging.info('Mongo DB mode: %s:%d', mongod_host, mongod_port)
-        do_mongodb(mongod_host, mongod_port, mongod_list)
+        do_mongodb(mongod_host, mongod_port, mongod_from_to, mongod_list)
