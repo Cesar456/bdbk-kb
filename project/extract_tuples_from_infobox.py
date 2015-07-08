@@ -8,14 +8,14 @@ import logging
 import os
 import re
 import sys
+from StringIO import StringIO
 
-from scrapy.http import TextResponse
+from lxml import etree
 
 from textutils.process_relations import cleanup_verb
 
 
 class Extractor(object):
-    link_regx = re.compile(r'href=["\']*([^"\']+)["\']*')
     lemma_list_link = re.compile(r'<a.*?href=["\']*([^"\']+)["\']*.*?>(.*?)</a>')
 
     def __init__(self):
@@ -28,7 +28,7 @@ class Extractor(object):
 
         page_biitems = html.xpath("//*[@class='biItem']")
         for i in page_biitems:
-            page_bititle = i.xpath(".//*[@class='biTitle']//text()").extract()
+            page_bititle = i.xpath(".//*[@class='biTitle']//text()")
             if len(page_bititle) == 0:
                 continue
 
@@ -38,19 +38,17 @@ class Extractor(object):
                 continue
 
             # if we have a <br>, then multiple bicontents should be produced
-            page_bicontents = i.xpath(".//*[@class='biContent']//text()|.//a").extract()
+            page_bicontents = i.xpath(".//*[@class='biContent']//text()|.//a")
             target = ''
 
             in_href=False
             for bicontent in page_bicontents:
-                if '<a' in bicontent:
+                if not isinstance(bicontent, unicode) and not isinstance(bicontent, str):
                     if in_href:
                         target += '}}'
 
-                    mch = re.search(self.link_regx, bicontent)
-                    if mch:
-                        in_href = True
-                        target += '{{link:%s|' % mch.group(1)
+                    in_href = True
+                    target += '{{link:%s|' % bicontent.xpath('./@href')[0]
                 else:
                     if '\n' in bicontent:
                         target += re.sub(r'[\xa0\s\n]', '', bicontent)
@@ -70,7 +68,7 @@ class Extractor(object):
 
     def get_title(self, html):
         # page title
-        page_title = html.xpath("//head//title//text()").extract()
+        page_title = html.xpath("//head//title//text()")
         if len(page_title) == 1 and u'_百度百科' in page_title[0]:
             page_title = page_title[0]
             page_title = page_title[:page_title.rfind('_')]
@@ -82,7 +80,7 @@ class Extractor(object):
 
     def get_search_term(self, html):
         # search term
-        search_term = html.xpath("//input[@id='topword']//@value").extract()
+        search_term = html.xpath("//input[@id='topword']//@value")
         if len(search_term) == 1:
             return search_term[0]
         else:
@@ -90,29 +88,22 @@ class Extractor(object):
 
     def get_abstract(self, html):
         # abstract
-        page_abstract = html.xpath("//head//meta[@name='Description']//@content").extract()
+        page_abstract = html.xpath("//head//meta[@name='Description']//@content")
         if len(page_abstract) == 1:
             return page_abstract[0]
         else:
             return None
 
     def get_lemma_list(self, html):
-        lemmas = html.xpath("//div[@id='lemma-list']//ul//a").extract()
+        lemmas = html.xpath("//div[@id='lemma-list']//ul//a")
         result = []
         for i in lemmas:
-            mch = re.search(self.lemma_list_link, i)
-            if mch:
-                result.append('{{link:%s|%s}}' % (mch.group(1), mch.group(2)))
+            result.append('{{link:%s|%s}}' % (i.xpath('./@href')[0], i.xpath('./text()')[0]))
         return result
 
     def extract(self, page_id, content):
-        # scrapy doc says it will detect encoding, but we should really
-        # be careful at that
-        page = TextResponse(
-            "file:///", 
-            headers={}, 
-            status=200, 
-            body=content)
+        parser = etree.HTMLParser()
+        page = etree.parse(StringIO(content), parser)
 
         title = self.get_title(page)
         search_term = self.get_search_term(page)
@@ -138,68 +129,112 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
         description='I will read baidu baike and produce you the info tuples of its infobox.')
-    parser.add_argument('--dir', required=True, help='database dir.')
-    parser.add_argument('--db-name', required=True, help='name of the database.')
-    parser.add_argument('--log', required=True, help='log file name.')
+    parser.add_argument('--src', required=True, choices=['stdin', 'page', 'archive'], help='extract from page source.')
+    parser.add_argument('--page-source', type=str, help='page source(page mode).')
+    parser.add_argument('--archive-dir', type=str, help='archive dir(archive mode).')
+    parser.add_argument('--archive-name', type=str, help='name of the archive(archive mode).')
+    parser.add_argument('--log', help='log file name.')
 
     args = parser.parse_args()
-    dir = args.dir
-    db_name = args.db_name
-    log_fn = args.log
+    src = args.src
 
-    from project.setup_logging import setup as setup_logger
-    logging = setup_logger(log_fn)
-    logging.info('Source: %s in %s', db_name, dir)
+    if src == 'page':
+        if not args.page_source:
+            logging.error('page mode specified, but no page source found in console arguments.')
+            sys.exit(1)
 
-    db = BaiduDatabase(dir, db_name)
-    verb_dict = {}
+    if src == 'archive':
+        archive_dir = args.archive_dir
+        archive_name = args.archive_name
+        if not archive_dir or not archive_name:
+            logging.error('archive mode specified, but no archive found in console arguments.')
+            sys.exit(1)
 
-    processed_count = 0
-    last_time = time.time()
-    last_processed = 0
+    if args.log:
+        from project.setup_logging import setup as setup_logger
+        logging = setup_logger(log_fn)
+        logging.info('Source: %s in %s', db_name, dir)
 
-    for pid, ptitle, pcontent in db.all_pages():
-        processed_count += 1
-        if processed_count % 1000 == 0:
-            logging.info('%d processed in %d/sec', processed_count, (processed_count-last_processed)/(time.time()-last_time))
-            last_processed = processed_count
-            last_time = time.time()
+    if src == 'stdin' or src == 'page':
+        if src == 'stdin':
+            inputs = []
+            while True:
+                try:
+                    inputs.append(raw_input())
+                except EOFError as e:
+                    break
 
-        try:
-            info = extractor.extract(pid, pcontent)
-            if len(info) == 4:
-                title, search_term, abstract, tuples = info
-                if len(tuples) > 0:
-                    ne = NamedEntity(name=title, 
-                        search_term=search_term,
-                        abstract=abstract,
-                        page_id=pid)
-                    ne.save()
+            source = '\n'.join(inputs)
+        else:
+            source = open(args.page_source).read()
 
-                    npk = ne.pk
-                    for tuple in tuples:
+        info = extractor.extract(0, source)
+        if len(info)==4:
+            print 'Info tuples:'
+            title, search_term, abstract, tuples = info
+            print 'Title:', title
+            print 'Search Term:', search_term
+            print 'Abstract:', abstract
 
-                        if tuple[0] not in verb_dict:
-                            v, _ = Verb.objects.get_or_create(name=tuple[0])
-                            verb_dict[tuple[0]] = v.pk
-                            vpk = v.pk
-                        else:
-                            vpk = verb_dict[tuple[0]]
+            for tuple in tuples:
+                print '(', tuple[0], ',', tuple[1], ')'
+        elif len(info) == 2:
+            print 'Page Redirect:'
+            title, lemmas = info
+            print 'Title:', title
+            for lemma in lemmas:
+                print '==>', lemma
 
-                        t = InfoboxTuple(named_entity_id=npk,
-                            content=tuple[1],
-                            verb_id=vpk)
-                        t.save()
+    elif src == 'archive':
+        db = BaiduDatabase(archive_dir, archive_name)
+        verb_dict = {}
 
-            elif len(info) == 2:
-                title, lemmas = info
-                for lemma in lemmas:
-                    ner = NamedEntityRedirect(page_id=pid,
-                        name=title,
-                        linked_name=lemma)
-                    ner.save()
+        processed_count = 0
+        last_time = time.time()
+        last_processed = 0
 
-        except Exception as e:
-            logging.warning('exception %r: page_id(%d)', e, pid)
+        for pid, ptitle, pcontent in db.all_pages():
+            processed_count += 1
+            if processed_count % 1000 == 0:
+                logging.info('%d processed in %d/sec', processed_count, (processed_count-last_processed)/(time.time()-last_time))
+                last_processed = processed_count
+                last_time = time.time()
 
-    db.close()
+            try:
+                info = extractor.extract(pid, pcontent)
+                if len(info) == 4:
+                    title, search_term, abstract, tuples = info
+                    if len(tuples) > 0:
+                        ne = NamedEntity(name=title,
+                                         search_term=search_term,
+                                         abstract=abstract,
+                                         page_id=pid)
+                        ne.save()
+
+                        npk = ne.pk
+                        for tuple in tuples:
+
+                            if tuple[0] not in verb_dict:
+                                v, _ = Verb.objects.get_or_create(name=tuple[0])
+                                verb_dict[tuple[0]] = v.pk
+                                vpk = v.pk
+                            else:
+                                vpk = verb_dict[tuple[0]]
+
+                            t = InfoboxTuple(named_entity_id=npk,
+                                             content=tuple[1],
+                                             verb_id=vpk)
+                            t.save()
+
+                elif len(info) == 2:
+                    title, lemmas = info
+                    for lemma in lemmas:
+                        ner = NamedEntityRedirect(page_id=pid,
+                                                  name=title,
+                                                  linked_name=lemma)
+                        ner.save()
+
+            except Exception as e:
+                logging.warning('exception %r: page_id(%d)', e, pid)
+
+        db.close()
