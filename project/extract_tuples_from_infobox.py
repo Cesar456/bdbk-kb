@@ -7,6 +7,7 @@ import gzip
 import logging
 import os
 import re
+import datetime
 import sys
 from StringIO import StringIO
 
@@ -139,24 +140,28 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
         description='I will read baidu baike and produce you the info tuples of its infobox.')
-    parser.add_argument('--src', required=True, choices=['stdin', 'page', 'archive'], help='extract from page source.')
+    parser.add_argument('--src', required=True, choices=['stdin', 'page', 'archive', 'mongodb'], help='HTML page source.')
     parser.add_argument('--page-source', type=str, help='page source(page mode).')
     parser.add_argument('--archive-dir', type=str, help='archive dir(archive mode).')
     parser.add_argument('--archive-name', type=str, help='name of the archive(archive mode).')
+    parser.add_argument('--mongod-host', type=str, help='host of mongo db server.')
+    parser.add_argument('--mongod-port', type=int, help='port of mongo db server.')
+    parser.add_argument('--mongod-list', type=str, help='a list file of _id to extract.')
     parser.add_argument('--log', help='log file name.')
 
     args = parser.parse_args()
-    src = args.src
 
-    def do_data_archive(archive_dir, archive_name):
-        db = BaiduDatabase(archive_dir, archive_name)
+    def do_extract(iterator):
+        '''
+        iterator: every item should be like: (url, last_modified, content)
+        '''
         verb_dict = {}
 
         processed_count = 0
         last_time = time.time()
         last_processed = 0
 
-        for pid, ptitle, pcontent in db.all_pages():
+        for purl, plmodified, pcontent in iterator():
             processed_count += 1
             if processed_count % 1000 == 0:
                 logging.info('%d processed in %d/sec', processed_count, (processed_count-last_processed)/(time.time()-last_time))
@@ -164,14 +169,16 @@ if __name__ == '__main__':
                 last_time = time.time()
 
             try:
-                info = extractor.extract(pid, pcontent)
+                # FIXME: should arg: pid be removed?
+                info = extractor.extract(0, pcontent)
                 if len(info) == 4:
                     title, search_term, abstract, tuples = info
                     if len(tuples) > 0:
                         ne = NamedEntity(name=title,
                                          search_term=search_term,
-                                         abstract=abstract,
-                                         page_id=pid)
+                                         bdbk_url=purl,
+                                         last_modified=plmodified,
+                                         abstract=abstract)
                         ne.save()
 
                         npk = ne.pk
@@ -192,15 +199,49 @@ if __name__ == '__main__':
                 elif len(info) == 2:
                     title, lemmas = info
                     for lemma in lemmas:
-                        ner = NamedEntityRedirect(page_id=pid,
-                                                  name=title,
+                        ner = NamedEntityRedirect(name=title,
                                                   linked_name=lemma)
                         ner.save()
 
             except Exception as e:
-                logging.warning('exception %r: page_id(%d)', e, pid)
+                logging.warning('exception %r: page_id(%s)', e, purl)
 
+
+    def do_data_archive(archive_dir, archive_name):
+        db = BaiduDatabase(archive_dir, archive_name)
+
+        def iterator():
+            for pid, ptitle, pcontent in db.all_pages():
+                yield 'http://baike.baidu.com/view/%d.htm' % pid, \
+                    datetime.datetime(1970, 1, 1, 0, 0, 0), \
+                    pcontent
+
+        do_extract(iterator)
         db.close()
+
+    def do_mongodb(mongod_host, mongod_port, mongod_list):
+        import pymongo
+        client = pymongo.MongoClient(mongod_host, mongod_port)
+        data_set = client.baidu.data
+
+        def iterator():
+            def convert_date_string(s):
+                year, month, day = s.split('-')
+                return datetime.datetime(int(year), int(month), int(day))
+
+            if not mongod_list:
+                for item in data_set.find():
+                    yield item['actualurl'], convert_date_string(item['lastmodifytime']), item['content']
+            else:
+                listfile = open(mongod_list)
+                for _id in listfile:
+                    item = data_set.find_one({'_id': _id})
+                    yield item['actualurl'], convert_date_string(item['lastmodifytime']), item['content']
+
+        do_extract(iterator)
+        client.close()
+
+    src = args.src
 
     if src == 'page':
         if not args.page_source:
@@ -212,6 +253,15 @@ if __name__ == '__main__':
         archive_name = args.archive_name
         if not archive_dir or not archive_name:
             logging.error('archive mode specified, but no archive found in console arguments.')
+            sys.exit(1)
+
+    if src == 'mongodb':
+        mongod_host = args.mongod_host
+        mongod_port = args.mongod_port
+        mongod_list = args.mongod_list
+
+        if not mongod_host or not mongod_port:
+            logging.error('mongodb mode specified, but no host/port pair given.')
             sys.exit(1)
 
     if args.log:
@@ -251,3 +301,5 @@ if __name__ == '__main__':
 
     elif src == 'archive':
         do_data_archive(archive_dir, archive_name)
+    elif src == 'mongodb':
+        do_mongodb(mongod_host, mongod_port, mongod_list)
