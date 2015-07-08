@@ -43,7 +43,7 @@ class NamedEntity(models.Model):
     bdbk_url = models.CharField(max_length=1024, unique=True)
     last_modified = models.DateTimeField(null=True, blank=True)
     abstract = models.TextField()
-    page_id = models.IntegerField()
+    page_id = models.IntegerField(null=True, blank=True)
 
 class InfoboxTuple(models.Model):
     '''
@@ -71,6 +71,6 @@ class NamedEntityRedirect(models.Model):
     linked_name: TODO
     '''
 
-    page_id = models.IntegerField()
+    page_id = models.IntegerField(null=True, blank=True)
     name = models.CharField(max_length=255, db_index=True)
     linked_name = models.CharField(max_length=255, db_index=True)
