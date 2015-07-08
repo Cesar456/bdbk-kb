@@ -175,7 +175,6 @@ if __name__ == '__main__':
         last_processed = 0
 
         for purl, plmodified, pcontent in iterator():
-            print purl
             processed_count += 1
             if processed_count % 100 == 0:
                 logging.info('%d processed in %d/sec', processed_count, (processed_count-last_processed)/(time.time()-last_time))
