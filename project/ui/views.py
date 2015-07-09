@@ -14,7 +14,7 @@ def hello(request):
 
 def ShowTuplesForNamedEntity(request, nepk):
     if nepk == 'random':
-        nepk = random.randint(0, NamedEntity.objects.all().count())
+        nepk = random.randint(0, NamedEntity.objects.all().count()-1)
         return HttpResponseRedirect(reverse('ShowTuplesForNamedEntity', args=(nepk,)))
 
     nepk = int(nepk)
@@ -34,7 +34,7 @@ def ShowTuplesForNamedEntity(request, nepk):
     random_nes = []
     random_count = min(6, total_ne_count)
     for i in range(0, random_count):
-        random_index = random.randint(0, total_ne_count)
+        random_index = random.randint(0, total_ne_count-1)
         randomed = NamedEntity.objects.all()[random_index]
 
         random_nes.append({
