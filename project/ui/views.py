@@ -74,7 +74,9 @@ def FuzzySearch(request):
 
 def ShowTuplesForNamedEntity(request, nepk):
     if nepk == 'random':
-        nepk = random.randint(0, NamedEntity.objects.all().count()-1)
+        nepk_index = random.randint(0, NamedEntity.objects.all().count()-1)
+        random_ne = NamedEntity.objects.all()[nepk_index]
+        nepk = random_ne.pk
         return HttpResponseRedirect(reverse('ShowTuplesForNamedEntity', args=(nepk,)))
 
     nepk = int(nepk)
