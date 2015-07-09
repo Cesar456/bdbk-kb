@@ -1,4 +1,4 @@
-{% load staticfiles %}
+{% extends 'ui/BasePage.html' %}
 
 {% comment 'context dicts' %}
 namedentity = {
@@ -23,161 +23,62 @@ status = {
 }
 {% endcomment %}
 
-<!-- HTML content starts -->
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
+<!-- template content starts -->
+{% block page_title %}Infobox Viewer{% endblock %}
+{% block page_brand %}Infobox Viewer{% endblock %}
+{% block page_brand_href %}{% url 'ShowTuplesForNamedEntity' 'random' %}{% endblock %}
+{% block page_content %}
 
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
+<h1>“{{namedentity.ne_title}}”的三元组数据</h1>
 
-    <title>Infobox Viewer</title>
+<p class="lead">
+  Extracted from <a target="_blank" href="{{namedentity.ne_bdbk_url}}">{{namedentity.ne_bdbk_url}}</a>
+</p>
 
-    <!-- Bootstrap Core CSS -->
-    <link href="{% static 'ui/css/bootstrap-3.3.4.min.css' %}" rel="stylesheet">
+<p><span class="glyphicon glyphicon-time"></span> Last updated on {{namedentity.ne_last_modified}}</p>
 
-    <!-- Custom CSS -->
-    <link href="{% static 'ui/css/ui.css' %}" rel="stylesheet">
+<hr>
 
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
+<table class="table table-striped">
+  <thead>
+    <td class="col-md-2"><b>谓词</b></td>
+    <td class="col-md-10"><b>属性值</b></td>
+  </thead>
+  <tbody>
+    {% for tuple in namedentity.ne_infobox %}
+    <tr>
+      <td>{{tuple.verb}}</td>
+      <td>{{tuple.content|safe}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 
-</head>
+{% endblock %}
 
-<body>
+{% block sidebar_content %}
 
-    <!-- Navigation -->
-    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="{% url 'ShowTuplesForNamedEntity' 'random' %}">Infobox Viewer</a>
-            </div>
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="#">About</a>
-                    </li>
-                    <li>
-                        <a href="#">Status</a>
-                    </li>
-                    <li>
-                        <a href="#">More</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Page Content -->
-    <div class="container">
-
-        <div class="row">
-
-            <div class="col-lg-8">
-
-                <h1>“{{namedentity.ne_title}}”的三元组数据</h1>
-
-                <p class="lead">
-                    Extracted from <a target="_blank" href="{{namedentity.ne_bdbk_url}}">{{namedentity.ne_bdbk_url}}</a>
-                </p>
-
-                <p><span class="glyphicon glyphicon-time"></span> Last updated on {{namedentity.ne_last_modified}}</p>
-
-                <hr>
-
-                <table class="table table-striped">
-                  <thead>
-                    <td class="col-md-2"><b>谓词</b></td>
-                    <td class="col-md-10"><b>属性值</b></td>
-                  </thead>
-                  <tbody>
-                    {% for tuple in namedentity.ne_infobox %}
-                    <tr>
-                      <td>{{tuple.verb}}</td>
-                      <td>{{tuple.content|safe}}</td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-
-            </div>
-
-            <div class="col-md-4">
-
-                <div class="well">
-                    <h4>搜索相关内容</h4>
-                    <div class="input-group">
-                        <input type="text" class="form-control">
-                        <span class="input-group-btn">
-                            <button class="btn btn-default" type="button">
-                                <span class="glyphicon glyphicon-search"></span>
-                        </button>
-                        </span>
-                    </div>
-                    <!-- /.input-group -->
-                </div>
-
-                <div class="well">
-                    <h4>建议</h4>
-                    <div class="row">
-                        <div class="col-lg-12">
-                          <ul class="list">
-                            {% for randomed in randomnes %}
-                            <li><a href="{{randomed.ne_url}}">{{randomed.ne_title}}</a></li>
-                            {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                    <!-- /.row -->
-                </div>
-
-                <!-- Side Widget Well -->
-                <div class="well">
-                  <h4>数据统计</h4>
-                  <ul class="list">
-                    <li>命名实体总数：{{ status.ne_count }}</li>
-                    <li>谓词总数： {{ status.verb_count }}</li>
-                    <li>三元组总数： {{ status.infoboxtuple_count }}</li>
-                  </ul>
-                </div>
-
-            </div>
-
-        </div>
-        <!-- /.row -->
-
-        <hr>
-
-        <!-- Footer -->
-        <footer>
-            <div class="row">
-                <div class="col-lg-12">
-                    <p>Done.</p>
-                </div>
-            </div>
-            <!-- /.row -->
-        </footer>
-
+<div class="well">
+  <h4>建议</h4>
+  <div class="row">
+    <div class="col-lg-12">
+      <ul class="list">
+        {% for randomed in randomnes %}
+        <li><a href="{{randomed.ne_url}}">{{randomed.ne_title}}</a></li>
+        {% endfor %}
+      </ul>
     </div>
-    <!-- /.container -->
+  </div>
+</div>
 
-    <script src="{% static 'ui/js/jquery-1.11.1.js' %}"></script>
-    <script src="{% static 'ui/js/bootstrap-3.3.4.min.js' %}"></script>
+<div class="well">
+  <h4>数据统计</h4>
+  <ul class="list">
+    <li>命名实体总数：{{ status.ne_count }}</li>
+    <li>谓词总数： {{ status.verb_count }}</li>
+    <li>三元组总数： {{ status.infoboxtuple_count }}</li>
+  </ul>
+</div>
 
-</body>
-
-</html>
+{% endblock %}
