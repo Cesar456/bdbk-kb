@@ -1,15 +1,22 @@
-from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404
 import json
-from bdbk.models import NamedEntity, Verb, InfoboxTuple
-from django.core.urlresolvers import reverse
 import random
+
+from django.core.urlresolvers import reverse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
+
+from bdbk.models import InfoboxTuple, NamedEntity, Verb
+
 
 # Create your views here.
 def hello(request):
     return HttpResponse('Hello World')
 
 def ShowTuplesForNamedEntity(request, nepk):
+    if nepk == 'random':
+        nepk = random.randint(0, NamedEntity.objects.all().count())
+        return HttpResponseRedirect(reverse('ShowTuplesForNamedEntity', args=(nepk,)))
+
     nepk = int(nepk)
 
     ne_object = get_object_or_404(NamedEntity, pk=nepk)
