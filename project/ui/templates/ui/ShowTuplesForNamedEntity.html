@@ -9,6 +9,9 @@ namedentity = {
 'ne_infobox': [{'verb': '...', 'content': '...'}, ...]
 }
 
+// note: "content" field of infobox is marked "safe" and should be
+// escaped properly in views.
+
 randomnes = {
 [{'ne_title': '...', 'ne_url': '...'}]
 }
@@ -105,13 +108,11 @@ status = {
                     {% for tuple in namedentity.ne_infobox %}
                     <tr>
                       <td>{{tuple.verb}}</td>
-                      <td>{{tuple.content}}</td>
+                      <td>{{tuple.content|safe}}</td>
                     </tr>
                     {% endfor %}
                   </tbody>
                 </table>
-
-                <p>结束。</p>
 
             </div>
 
