@@ -1,0 +1,86 @@
+{% extends 'ui/BasePage.html' %}
+
+{% comment 'context dicts' %}
+search_term = '...'
+
+search_result_ne = [
+  {
+    'ne_name': '...',
+    'ne_url': '...',
+  }
+]
+
+search_result_content = [
+  {
+    'ne_name': '...',
+    'ne_url': '...',
+    'verb': '...',
+    'content': '...'
+  }
+]
+
+{% endcomment %}
+
+
+<!-- template content starts -->
+{% block page_title %}搜索结果{% endblock %}
+{% block page_brand %}Infobox Viewer{% endblock %}
+{% block page_brand_href %}{% url 'ShowTuplesForNamedEntity' 'random' %}{% endblock %}
+{% block page_content %}
+
+<h1>“{{search_term}}”搜索结果</h1>
+
+<hr>
+
+<h4>搜索命名实体的结果</h4>
+<table class="table table-striped">
+  <thead>
+    <td class="col-md-12"><b>命名实体</b></td>
+  </thead>
+  <tbody>
+    {% for tuple in search_result_ne %}
+    <tr>
+      <td><a href="{{tuple.ne_url}}">{{tuple.ne_name}}</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<hr>
+
+<h4>搜索三元组值的结果</h4>
+<table class="table table-striped">
+  <thead>
+    <td class="col-md-2"><b>命名实体</b></td>
+    <td class="col-md-2"><b>谓词</b></td>
+    <td class="col-md-10"><b>属性值</b></td>
+  </thead>
+  <tbody>
+    {% for tuple in search_result_content %}
+    <tr>
+      <td><a href="{{tuple.ne_url}}">{{tuple.ne_name}}</a></td>
+      <td>{{tuple.verb}}</td>
+      <td>{{tuple.content|safe}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
+
+
+{% block search_sidebar_content %}
+<div class="well">
+  <h4>搜索相关内容</h4>
+  <form action="{% url 'FuzzySearch' %}" method="post">
+    <div class="input-group">
+      <input type="text" name="query" class="form-control" placeholder="{{search_term}}">
+      <span class="input-group-btn">
+        <button class="btn btn-default" type="button">
+          <span class="glyphicon glyphicon-search"></span>
+        </button>
+      </span>
+    </div>
+  </form>
+</div>
+{% endblock %}

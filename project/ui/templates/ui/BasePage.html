@@ -9,6 +9,7 @@
     page_brand_href: string, a url to which page brand links.
     page_content: html, main page content.
     sidebar_content: html, side bar content.
+    search_sidebar_content: html, search side bar
 
 {% endcomment %}
 
@@ -84,21 +85,24 @@
 
             <div class="col-md-4">
 
-                <div class="well">
-                    <h4>搜索相关内容</h4>
-                    <div class="input-group">
-                        <input type="text" class="form-control">
-                        <span class="input-group-btn">
-                            <button class="btn btn-default" type="button">
-                                <span class="glyphicon glyphicon-search"></span>
-                        </button>
-                        </span>
-                    </div>
-                    <!-- /.input-group -->
-                </div>
+              {% block search_sidebar_content %}
+              <div class="well">
+                <h4>搜索相关内容</h4>
+                <form action="{% url 'FuzzySearch' %}" method="post">
+                  <div class="input-group">
+                    <input type="text" name="query" class="form-control">
+                    <span class="input-group-btn">
+                      <button class="btn btn-default" type="button">
+                        <span class="glyphicon glyphicon-search"></span>
+                      </button>
+                    </span>
+                  </div>
+                </form>
+              </div>
+              {% endblock %}
 
-                {% block sidebar_content %}
-                {% endblock %}
+              {% block sidebar_content %}
+              {% endblock %}
 
             </div>
 

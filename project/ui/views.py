@@ -6,13 +6,71 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.html import escape
+from django.views.decorators.http import require_http_methods
 
 from bdbk.models import InfoboxTuple, NamedEntity, Verb
 
 
-# Create your views here.
-def hello(request):
-    return HttpResponse('Hello World')
+def resolve_content_links(content):
+    # TODO: add cache
+    content = escape(content)
+
+    def replaced_content(mch):
+        linked_url_real = 'http://baike.baidu.com' + mch.group(1)
+        linked_ne = NamedEntity.objects.filter(bdbk_url=linked_url_real)
+        # TODO: how to map the linked named entity more properly
+        if len(linked_ne):
+            linked_ne_url = reverse('ShowTuplesForNamedEntity', args=(linked_ne[0].pk,))
+            return '<a href="%s">%s</a>' % (linked_ne_url, mch.group(2))
+        else:
+            return mch.group(2)
+
+    return re.sub(r'\{\{link:([^|]+)\|(.*?)\}\}', replaced_content, content)
+
+# views starts
+
+@require_http_methods(['POST'])
+def FuzzySearch(request):
+    '''
+    Fuzzy query strategy:
+    1. Named Entity name:
+        name,
+        search_term
+    2. Content:
+    3. Verb
+    '''
+
+    search_term = request.POST.get('query', None)
+    if not search_term:
+        return HttpResponseRedirect(reverse('ShowTuplesForNamedEntity', args=('random',)))
+
+    # ne_search_result = NamedEntity.objects.filter(name__startswith=search_term)
+    ne_search_result = NamedEntity.objects.filter(name__contains=search_term)
+
+    search_result_ne = []
+    for obj in ne_search_result:
+        search_result_ne.append({
+            'ne_name': obj.name,
+            'ne_url': reverse('ShowTuplesForNamedEntity', args=(obj.pk,))
+        })
+
+    tuple_search_result = InfoboxTuple.objects.filter(content__contains=search_term)
+
+    search_result_content = []
+    for obj in tuple_search_result:
+        search_result_content.append({
+            'ne_name': obj.named_entity.name,
+            'ne_url': reverse('ShowTuplesForNamedEntity', args=(obj.named_entity.pk,)),
+            'verb': obj.verb.name,
+            'content': resolve_content_links(obj.content),
+        })
+
+    result = {
+        'search_term': search_term,
+        'search_result_ne': search_result_ne,
+        'search_result_content': search_result_content,
+    }
+    return render(request, 'ui/SearchResult.html', result)
 
 def ShowTuplesForNamedEntity(request, nepk):
     if nepk == 'random':
@@ -26,26 +84,9 @@ def ShowTuplesForNamedEntity(request, nepk):
     tuples = []
 
     for infoboxtuple in ne_object.infoboxtuple_set.all():
-        infoboxtuple_verb = infoboxtuple.verb.name
-        infoboxtuple_content = infoboxtuple.content
-
-        infoboxtuple_content = escape(infoboxtuple_content)
-
-        def replaced_content(mch):
-            linked_url_real = 'http://baike.baidu.com' + mch.group(1)
-            linked_ne = NamedEntity.objects.filter(bdbk_url=linked_url_real)
-            # TODO: how to map the linked named entity more properly
-            if len(linked_ne):
-                linked_ne_url = reverse('ShowTuplesForNamedEntity', args=(linked_ne[0].pk,))
-                return '<a href="%s">%s</a>' % (linked_ne_url, mch.group(2))
-            else:
-                return mch.group(2)
-
-        infoboxtuple_content = re.sub(r'\{\{link:([^|]+)\|(.*?)\}\}', replaced_content, infoboxtuple_content)
-
         tuples.append({
-            'verb': infoboxtuple_verb,
-            'content': infoboxtuple_content,
+            'verb': infoboxtuple.verb.name,
+            'content': resolve_content_links(infoboxtuple.content),
         })
 
     # fetch random named entities
