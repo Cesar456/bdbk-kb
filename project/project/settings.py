@@ -16,9 +16,9 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'nlp_project',
+            'NAME': 'QA_Project',
             'USER': 'nlp_project',
-            'PORT': 17806,
+            'PORT': 3306,
             'PASSWORD': 'nlp_project',
             'HOST': '127.0.0.1',
         }
