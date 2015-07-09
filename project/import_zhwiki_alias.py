@@ -1,8 +1,9 @@
 #!/usr/bin/python
 
+from django.core.exceptions import ObjectDoesNotExist
+
 import project.setup_database
 from zhwiki.models import NamedEntity, NamedEntityNamedAlias
-from django.core.exceptions import ObjectDoesNotExist
 
 f = open('../PageMapLine.txt')
 named_entity_subjects = {}

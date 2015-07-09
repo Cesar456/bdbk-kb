@@ -201,4 +201,3 @@ class SparQL(object):
                         ret.append(SparQLLiteral(value.encode('utf8')))
 
             yield (ret[0], ret[1], ret[2])
-

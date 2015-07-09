@@ -3,8 +3,8 @@
 
 import re
 
-from virtuoso import sparql
 from project.setup_logging import setup as setup_logging
+from virtuoso import sparql
 
 PREDICT_PREDICT_PREFIX = 'http://baike.baidu.com/predicts#'
 PREDICT_BAIKE_TITLE = 'http://baike.baidu.com/graph#baike_title'
@@ -153,4 +153,3 @@ if __name__ == '__main__':
     if tuple_file:
         logging.info('inserting triples...')
         insert_tuples(tuple_file, logging)
-

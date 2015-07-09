@@ -1,5 +1,6 @@
-from django.db import models
 import re
+
+from django.db import models
 
 ne_regx = re.compile(r'^(.*?)_\(.*?\)$')
 

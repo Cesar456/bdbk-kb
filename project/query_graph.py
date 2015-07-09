@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import re
 import json
+import re
+
 from virtuoso import sparql
 
 PREDICT_SEARCH_TERM = 'http://baike.baidu.com/graph#search_term'

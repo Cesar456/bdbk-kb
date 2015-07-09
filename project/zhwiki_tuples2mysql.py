@@ -2,8 +2,8 @@
 # This script converts raw tuples into sql inserts, 
 # using django's powerful ORM framework
 
-import re
 import pickle
+import re
 import sys
 
 from project.setup_database import *
