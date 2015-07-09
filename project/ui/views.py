@@ -1,9 +1,11 @@
 import json
 import random
+import re
 
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
+from django.utils.html import escape
 
 from bdbk.models import InfoboxTuple, NamedEntity, Verb
 
@@ -24,9 +26,26 @@ def ShowTuplesForNamedEntity(request, nepk):
     tuples = []
 
     for infoboxtuple in ne_object.infoboxtuple_set.all():
+        infoboxtuple_verb = infoboxtuple.verb.name
+        infoboxtuple_content = infoboxtuple.content
+
+        infoboxtuple_content = escape(infoboxtuple_content)
+
+        def replaced_content(mch):
+            linked_url_real = 'http://baike.baidu.com' + mch.group(1)
+            linked_ne = NamedEntity.objects.filter(bdbk_url=linked_url_real)
+            # TODO: how to map the linked named entity more properly
+            if len(linked_ne):
+                linked_ne_url = reverse('ShowTuplesForNamedEntity', args=(linked_ne[0].pk,))
+                return '<a href="%s">%s</a>' % (linked_ne_url, mch.group(2))
+            else:
+                return mch.group(2)
+
+        infoboxtuple_content = re.sub(r'\{\{link:([^|]+)\|(.*?)\}\}', replaced_content, infoboxtuple_content)
+
         tuples.append({
-            'verb': infoboxtuple.verb.name,
-            'content': infoboxtuple.content
+            'verb': infoboxtuple_verb,
+            'content': infoboxtuple_content,
         })
 
     # fetch random named entities
