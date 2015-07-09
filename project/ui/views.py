@@ -70,7 +70,7 @@ def ShowTuplesForNamedEntity(request, nepk):
             'ne_id': nepk,
             'ne_title': ne_object.name,
             'ne_search_term': ne_object.search_term,
-            'ne_last_modified': ne_object.last_modified.strftime('%Y-%m-%d %H:%M:%S'),
+            'ne_last_modified': ne_object.last_modified.strftime('%Y-%m-%d %H:%M:%S') if ne_object.last_modified else 'Not Specified',
             'ne_bdbk_url': ne_object.bdbk_url,
             'ne_infobox': tuples
             },
