@@ -126,4 +126,3 @@ def ShowTuplesForNamedEntity(request, nepk):
     }
 
     return render(request, 'ui/ShowTuplesForNamedEntity.html', result)
-    return HttpResponse(response_string, content_type='text/json')
