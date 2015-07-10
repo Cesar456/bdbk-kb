@@ -33,7 +33,7 @@ class Extractor(object):
             if len(page_bititle) == 0:
                 continue
 
-            bititle = re.sub(r'[\xa0\s]', '', ''.join(unicode(page_bititle)))
+            bititle = re.sub(r'[\xa0\s]', '', ''.join(page_bititle))
             bititle = cleanup_verb(bititle)
             if not bititle:
                 continue
@@ -53,17 +53,17 @@ class Extractor(object):
                     if len(href):
                         # some links are just clickable HTML of foot-reference,
                         # so we don't have to include them
-                        target += '{{link:%s|' % unicode(href[0])
+                        target += '{{link:%s|' % href[0]
                     else:
                         in_href = False
                 else:
                     if '\n' in bicontent:
-                        target += re.sub(r'[\xa0\s\n]', '', unicode(bicontent))
+                        target += re.sub(r'[\xa0\s\n]', '', bicontent)
                         if target:
                             tuples.append((bititle, target))
                         target = ''
                     else:
-                        target += unicode(bicontent).strip()
+                        target += bicontent.strip()
 
                     if in_href:
                         in_href = False
@@ -77,7 +77,7 @@ class Extractor(object):
         # page title
         page_title = html.xpath("//head//title//text()")
         if len(page_title) == 1 and u'_百度百科' in page_title[0]:
-            page_title = unicode(page_title[0])
+            page_title = page_title[0]
             page_title = page_title[:page_title.rfind('_')]
 
             return page_title
@@ -105,7 +105,7 @@ class Extractor(object):
         lemmas = html.xpath("//div[@id='lemma-list']//ul//a")
         result = []
         for i in lemmas:
-            result.append(u'{{link:%s|%s}}' % (unicode(i.xpath('./@href')[0]), unicode(i.xpath('./text()')[0])))
+            result.append(u'{{link:%s|%s}}' % (i.xpath('./@href')[0], i.xpath('./text()')[0]))
         return result
 
     def is_lemma_list(self, html):
