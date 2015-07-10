@@ -34,7 +34,7 @@ if __name__  == '__main__':
 
         logging.info('worker %s started, working on doc %d-%d', worker_id, slice_from, slice_to)
 
-        local_log_fn = 'worker-%s-%d-%d.log' % (worker_id, slice_from, slice_to)
+        local_log_fn = '%s/worker-%s-%d-%d.log' % (args.worker_dir, worker_id, slice_from, slice_to)
         subprocess.call(['python', 'extract_tuples_from_infobox.py',
                          '--src', 'mongodb',
                          '--mongod-host', args.mongod_host,
