@@ -134,6 +134,7 @@ def AdvancedSearch(request):
             for i in qresult:
                 result.append({
                     'namedentity': i.named_entity.name,
+                    'namedentity_url': reverse('ShowTuplesForNamedEntity', args=(i.named_entity.id,)),
                     'verb': i.verb.name,
                     'content': resolve_content_links(i.content)
                 })

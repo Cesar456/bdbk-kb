@@ -48,7 +48,7 @@ status = {
   <tbody>
     {% for tuple in search_result %}
     <tr>
-      <td>{{tuple.namedentity}}</td>
+      <td><a href="{{tuple.namedentity_url}}">{{tuple.namedentity}}</a></td>
       <td>{{tuple.verb}}</td>
       <td>{{tuple.content|safe}}</td>
     </tr>
