@@ -1,6 +1,5 @@
 import os
 
-
 if os.environ.has_key('NLP_DEBUG'):
     print 'Enter debug mode for database.'
     DATABASES = {
@@ -31,7 +30,7 @@ INSTALLED_APPS = [
 ]
 MIDDLEWARE_CLASSES = []
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = ['*']
 ROOT_URLCONF = 'project.urls'
 
 STATIC_URL = '/static/'

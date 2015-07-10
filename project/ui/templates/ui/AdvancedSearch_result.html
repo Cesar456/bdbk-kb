@@ -1,0 +1,80 @@
+{% extends 'ui/BasePage.html' %}
+
+{% comment 'context dicts' %}
+search_result = [
+{
+'namedentity': '...',
+'verb': '...',
+'content': '...'
+}
+]
+
+friendly_query_string: '...'
+search_result_message: '...'
+
+status = {
+'ne_count': integer,
+'infoboxtuple_count': integer,
+'verb_count': integer
+}
+{% endcomment %}
+
+
+<!-- template content starts -->
+{% block page_title %}高级搜索 - 结果{% endblock %}
+{% block page_brand %}Infobox Viewer{% endblock %}
+{% block page_brand_href %}#{% endblock %}
+{% block page_content %}
+
+<h1>搜索结果</h1>
+
+
+<hr>
+
+{% if search_result|length %}
+
+{% if friendly_query_string|length %}
+<p>{{ friendly_query_string }}的搜索结果。</p>
+{% endif %}
+
+<p>{{ search_result_message }}</p>
+
+<table class="table table-striped">
+  <thead>
+    <td class="col-md-2"><b>命名实体</b></td>
+    <td class="col-md-2"><b>谓词</b></td>
+    <td class="col-md-8"><b>属性值</b></td>
+  </thead>
+  <tbody>
+    {% for tuple in search_result %}
+    <tr>
+      <td>{{tuple.namedentity}}</td>
+      <td>{{tuple.verb}}</td>
+      <td>{{tuple.content|safe}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% else %}
+
+{% if friendly_query_string|length %}
+<p>{{ friendly_query_string }}的搜索结果。</p>
+{% endif %}
+<p>{{ search_result_message }}</p>
+
+{% endif %}
+{% endblock %}
+
+{% block search_sidebar_content %}
+
+<div class="well">
+  <h4>数据统计</h4>
+  <ul class="list">
+    <li>命名实体总数：{{ status.ne_count }}</li>
+    <li>谓词总数： {{ status.verb_count }}</li>
+    <li>三元组总数： {{ status.infoboxtuple_count }}</li>
+  </ul>
+</div>
+
+{% endblock %}

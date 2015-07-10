@@ -7,4 +7,5 @@ urlpatterns = patterns('ui.views',
     url(r'^status/namedEntity/$', 'Status_NamedEntity', name='Status_NamedEntity'),
     url(r'^status/verb/$', 'Status_Verb', name='Status_Verb'),
     url(r'^status/overview/$', 'Status_Overview', name='Status_Overview'),
+    url(r'^advancedSearch/$', 'AdvancedSearch', name='AdvancedSearch'),
 )

@@ -1,0 +1,111 @@
+{% extends 'ui/BasePage.html' %}
+
+{% comment 'context dicts' %}
+randomnes = {
+[{'ne_title': '...', 'ne_url': '...'}]
+}
+
+status = {
+'ne_count': integer,
+'infoboxtuple_count': integer,
+'verb_count': integer
+}
+{% endcomment %}
+
+
+<!-- template content starts -->
+{% block page_title %}高级搜索{% endblock %}
+{% block page_brand %}Infobox Viewer{% endblock %}
+{% block page_brand_href %}#{% endblock %}
+{% block page_content %}
+
+<h1>高级搜索</h1>
+
+
+<hr>
+
+<form class="form-horizontal" action="{% url 'AdvancedSearch' %}" method="post">
+  <div class="form-group">
+    <label for="limitNE" class="col-md-2 control-label">命名实体</label>
+    <div class="col-md-2">
+      <select class="form-control" name="limitNE_action">
+        <option>IS</option>
+        <option>CONTAINS</option>
+        <option>STARTSWITH</option>
+        <option>ENDSWITH</option>
+      </select>
+    </div>
+    <div class="col-md-8">
+      <input type="text" class="form-control" id="limitNE_str" name="limitNE_str" placeholder="不要搜索这个项">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="limitVERB" class="col-md-2 control-label">谓词</label>
+    <div class="col-md-2">
+      <select class="form-control" name="limitVERB_action">
+        <option>IS</option>
+        <option>CONTAINS</option>
+        <option>STARTSWITH</option>
+        <option>ENDSWITH</option>
+      </select>
+    </div>
+    <div class="col-md-8">
+      <input type="text" class="form-control" id="limitVERB_str" name="limitVERB_str" placeholder="不要搜索这个项">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="limitCONTENT" class="col-md-2 control-label">属性值</label>
+    <div class="col-md-2">
+      <select class="form-control" name="limitCONTENT_action">
+        <option>IS</option>
+        <option>CONTAINS</option>
+        <option>STARTSWITH</option>
+        <option>ENDSWITH</option>
+      </select>
+    </div>
+    <div class="col-md-8">
+      <input type="text" class="form-control" id="limitCONTENT_str" name="limitCONTENT_str" placeholder="不要搜索这个项">
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="form-group">
+    <div class="col-md-offset-2 col-md-10">
+      <button type="submit" class="btn btn-default">搜索</button>
+    </div>
+  </div>
+</form>
+
+
+{% endblock %}
+
+{% block search_sidebar_content %}
+{% endblock %}
+{% block sidebar_content %}
+
+<div class="well">
+  <h4>建议</h4>
+  <div class="row">
+    <div class="col-lg-12">
+      <ul class="list">
+        {% for randomed in randomnes %}
+        <li><a href="{{randomed.ne_url}}">{{randomed.ne_title}}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="well">
+  <h4>数据统计</h4>
+  <ul class="list">
+    <li>命名实体总数：{{ status.ne_count }}</li>
+    <li>谓词总数： {{ status.verb_count }}</li>
+    <li>三元组总数： {{ status.infoboxtuple_count }}</li>
+  </ul>
+</div>
+
+{% endblock %}
