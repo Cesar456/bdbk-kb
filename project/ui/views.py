@@ -29,6 +29,15 @@ def resolve_content_links(content):
 
 # views starts
 
+def Status_Overview(request):
+    return HttpResponse('TODO')
+
+def Status_Verb(request):
+    return HttpResponse('TODO')
+
+def Status_NamedEntity(request, filter_string=None):
+    return HttpResponse('TODO')
+
 @require_http_methods(['POST'])
 def FuzzySearch(request):
     '''

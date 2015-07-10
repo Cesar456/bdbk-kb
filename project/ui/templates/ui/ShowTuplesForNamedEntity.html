@@ -25,7 +25,7 @@ status = {
 
 
 <!-- template content starts -->
-{% block page_title %}Infobox Viewer{% endblock %}
+{% block page_title %}Infobox - {{namedentity.ne_title}}{% endblock %}
 {% block page_brand %}Infobox Viewer{% endblock %}
 {% block page_brand_href %}{% url 'ShowTuplesForNamedEntity' 'random' %}{% endblock %}
 {% block page_content %}
