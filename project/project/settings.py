@@ -1,8 +1,5 @@
 import os
 
-# before turning off this switch:
-# 1. make sure you have managed all static files
-DEBUG=True
 
 if os.environ.has_key('NLP_DEBUG'):
     print 'Enter debug mode for database.'
@@ -30,7 +27,7 @@ INSTALLED_APPS = [
     'bdbk',
     'zhwiki',
     'processor',
-    'ui'
+    'ui',
 ]
 MIDDLEWARE_CLASSES = []
 
@@ -39,4 +36,4 @@ ROOT_URLCONF = 'project.urls'
 
 STATIC_URL = '/static/'
 # set this to the static file directory you want to serve in a production server
-# STATIC_ROOT =
+# STATIC_ROOT = 'static/'
