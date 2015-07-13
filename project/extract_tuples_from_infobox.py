@@ -3,17 +3,18 @@
 # This script reads baidu baike data, and parses its infobox, produces
 # tuples of the name entities
 
+import argparse
 import datetime
 import logging
 import sys
+import time
+
+import project.setup_database
+from bdbk.models import *
+from bdbk.page_extractor import extractor
+from dbutils.baidu_database import BaiduDatabase
 
 if __name__ == '__main__':
-    import argparse
-    from dbutils.baidu_database import BaiduDatabase
-    import project.setup_database
-    from bdbk.models import *
-    import time
-
     parser = argparse.ArgumentParser(
         description='I will read baidu baike and produce you the info tuples of its infobox.')
     parser.add_argument('--src', required=True, choices=['stdin', 'page', 'archive', 'mongodb'], help='HTML page source.')
@@ -140,22 +141,12 @@ if __name__ == '__main__':
         else:
             source = open(args.page_source).read()
 
-        info = extractor.extract(0, source)
-        if len(info)==4:
-            print 'Info tuples:'
-            title, search_term, abstract, tuples = info
-            print 'Title:', title
-            print 'Search Term:', search_term
-            print 'Abstract:', abstract
+        page_title, search_term, tuples = extractor.extract(source)
+        print 'Title:', page_title
+        print 'Search Term:', search_term
 
-            for tuple in tuples:
-                print '(', tuple[0], ',', tuple[1], ')'
-        elif len(info) == 2:
-            print 'Page Redirect:'
-            title, lemmas = info
-            print 'Title:', title
-            for lemma in lemmas:
-                print '==>', lemma
+        for tuple in tuples:
+            print '(', tuple[0], ',', tuple[1], ')'
 
     elif src == 'archive':
         logging.info('Archive mode: %s in %s', archive_name, archive_dir)
