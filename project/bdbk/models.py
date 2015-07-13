@@ -8,7 +8,7 @@ from django.db import models
 from .page_extractor import extractor as page_extractor
 
 # data migration must be performed on every schema update
-# version: 7
+# version: 8
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ class NamedEntityAlias(models.Model):
 
 class NamedEntity(models.Model):
     '''
-    Ver: 3
+    Ver: 4
 
     Database Schema:
     name: the name for this named entity, for names that could be mapped to
@@ -71,7 +71,6 @@ class NamedEntity(models.Model):
     search_term = models.CharField(max_length=255, db_index=True)
     bdbk_url = models.CharField(max_length=1024)
     last_modified = models.DateTimeField(null=True, blank=True)
-    abstract = models.TextField()
 
     @staticmethod
     def updateFromPage(url, content, last_modified):
