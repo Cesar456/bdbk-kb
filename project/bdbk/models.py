@@ -34,8 +34,6 @@ class NamedEntity(models.Model):
     abstract: brief intro of this entity, possibily it could be forcely cut of
           at the middle of a word.
 
-    page_id: an id extracted from bdbk_url, not a good identifier for ne,
-          should it be removed in further schemas.
     '''
 
     name = models.CharField(max_length=255, db_index=True)
@@ -43,7 +41,6 @@ class NamedEntity(models.Model):
     bdbk_url = models.CharField(max_length=1024)
     last_modified = models.DateTimeField(null=True, blank=True)
     abstract = models.TextField()
-    page_id = models.IntegerField(null=True, blank=True)
 
 class InfoboxTuple(models.Model):
     '''
@@ -66,11 +63,9 @@ class NamedEntityRedirect(models.Model):
     Ver: 1
 
     Database Schema:
-    page_id: the baidu baike page id.
     name: TODO
     linked_name: TODO
     '''
 
-    page_id = models.IntegerField(null=True, blank=True)
     name = models.CharField(max_length=255, db_index=True)
     linked_name = models.CharField(max_length=255, db_index=True)

@@ -82,7 +82,6 @@ class Extractor(object):
 
             return page_title
         else:
-            # logging.warning('Unable to extract title: page_id(%d)', page_id)
             return None
 
     def get_search_term(self, html):
@@ -111,7 +110,7 @@ class Extractor(object):
     def is_lemma_list(self, html):
         return len(html.xpath("//*[@id='lemma-list']")) != 0
 
-    def extract(self, page_id, content):
+    def extract(self, content):
         '''
         Returns:
         (infoboxtuples, lemma_list)
@@ -183,7 +182,7 @@ if __name__ == '__main__':
 
             try:
                 # FIXME: should arg: pid be removed?
-                infoboxtuples, lemma_list = extractor.extract(0, pcontent)
+                infoboxtuples, lemma_list = extractor.extract(pcontent)
 
                 # infobox tuples:
                 title, search_term, abstract, tuples = infoboxtuples
@@ -217,7 +216,7 @@ if __name__ == '__main__':
                     ner.save()
 
             except Exception as e:
-                logging.warning('exception %r: page_id(%s)', e, purl)
+                logging.warning('exception %r: page_url(%s)', e, purl)
 
 
     def do_data_archive(archive_dir, archive_name):
