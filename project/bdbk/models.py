@@ -81,7 +81,7 @@ class NamedEntity(models.Model):
             if '?' not in url:
                 return (False, url, None)
 
-            real_url, parms = url.split('?', 1)
+            real_url, parms = url.encode('utf8').split('?', 1)
             fromtitle = None
             fromid = None
             for i in parms.split('&'):
