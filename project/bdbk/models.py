@@ -87,9 +87,9 @@ class NamedEntity(models.Model):
             for i in parms.split('&'):
                 key, value = i.split('=')
                 if key == 'fromtitle':
-                    fromtitle = urllib.unquote(value)
+                    fromtitle = urllib.unquote(value).decode('utf8')
                 elif key == 'fromid':
-                    fromid = urllib.unquote(value)
+                    fromid = urllib.unquote(value).decode('utf8')
 
             if fromtitle and fromid:
                 return (True, real_url, (fromtitle, fromid))
