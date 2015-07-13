@@ -94,7 +94,7 @@ class NamedEntity(models.Model):
             if fromtitle and fromid:
                 return (True, real_url, (fromtitle, fromid))
 
-            logger.warn('bdbk url: %s, does not match common alias signature, needs investigation')
+            logger.warn('bdbk url: %s, does not match common alias signature, needs investigation', url)
             return (False, real_url, None)
 
 
