@@ -23,7 +23,7 @@ status = {
 <!-- template content starts -->
 {% block page_title %}高级搜索 - 结果{% endblock %}
 {% block page_brand %}Infobox Viewer{% endblock %}
-{% block page_brand_href %}#{% endblock %}
+{% block page_brand_href %}{% url 'ShowTuplesForNamedEntity' 'random' %}{% endblock %}
 {% block page_content %}
 
 <h1>搜索结果</h1>
