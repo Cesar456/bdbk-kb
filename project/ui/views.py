@@ -92,19 +92,19 @@ def AdvancedSearch(request):
 
         def action_to_query_dict(field, field_friendly_name, action, qstr):
             if action == 'IS':
-                a = 'exact'
+                a = 'iexact'
                 b = '%s is "%s"' % (field_friendly_name, qstr)
             elif action == 'STARTSWITH':
-                a = 'startswith'
+                a = 'istartswith'
                 b = '%s starts with "%s"' % (field_friendly_name, qstr)
             elif action == 'ENDSWITH':
-                a = 'endswith'
+                a = 'iendswith'
                 b = '%s ends with "%s"' % (field_friendly_name, qstr)
             elif action == 'CONTAINS':
-                a = 'contains'
+                a = 'icontains'
                 b = '%s contains "%s"' % (field_friendly_name, qstr)
             else:
-                a = 'contains'
+                a = 'icontains'
                 b = '%s contains "%s"' % (field_friendly_name, qstr)
 
             return b, {
@@ -173,7 +173,7 @@ def FuzzySearch(request):
         return HttpResponseRedirect(reverse('ShowTuplesForNamedEntity', args=('random',)))
 
     # ne_search_result = NamedEntity.objects.filter(name__startswith=search_term)
-    ne_search_result = NamedEntity.objects.filter(name__contains=search_term)
+    ne_search_result = NamedEntity.objects.filter(name__icontains=search_term)
 
     search_result_ne = []
     for obj in ne_search_result:
@@ -182,7 +182,7 @@ def FuzzySearch(request):
             'ne_url': reverse('ShowTuplesForNamedEntity', args=(obj.pk,))
         })
 
-    tuple_search_result = InfoboxTuple.objects.filter(content__contains=search_term)
+    tuple_search_result = InfoboxTuple.objects.filter(content__icontains=search_term)
 
     search_result_content = []
     for obj in tuple_search_result:
