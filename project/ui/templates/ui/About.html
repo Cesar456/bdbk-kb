@@ -1,0 +1,18 @@
+{% extends 'ui/BasePage.html' %}
+
+{% comment 'context dicts' %}
+{% endcomment %}
+
+
+<!-- template content starts -->
+{% block page_title %}Infobox - {{namedentity.ne_title}}{% endblock %}
+{% block page_brand %}Infobox Viewer{% endblock %}
+{% block page_brand_href %}{% url 'ShowTuplesForNamedEntity' 'random' %}{% endblock %}
+
+{% block page_content %}
+<h1>关于我</h1>
+<p>这是一个对百度百科页面数据进行三元组化的小程序，更多功能正在逐步完善中。</p>
+{% endblock %}
+
+{% block search_sidebar_content %}
+{% endblock %}

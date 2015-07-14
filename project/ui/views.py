@@ -60,8 +60,12 @@ def populate_random_suggestion():
     }
 
 # views starts
+
+def About(request):
+    return render(request, 'ui/About.html', {})
+
 def Status_Overview(request):
-    return HttpResponse('TODO')
+    return render(request, 'ui/Status_Overview.html', populate_db_status())
 
 def Status_Verb(request):
     return HttpResponse('TODO')

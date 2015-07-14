@@ -1,0 +1,27 @@
+{% extends 'ui/BasePage.html' %}
+
+{% comment 'context dicts' %}
+
+status = {
+'ne_count': integer,
+'infoboxtuple_count': integer,
+'verb_count': integer
+}
+{% endcomment %}
+
+
+<!-- template content starts -->
+{% block page_title %}Infobox - {{namedentity.ne_title}}{% endblock %}
+{% block page_brand %}Infobox Viewer{% endblock %}
+{% block page_brand_href %}{% url 'ShowTuplesForNamedEntity' 'random' %}{% endblock %}
+{% block page_content %}
+
+<h1>数据概览</h1>
+
+<p class="lead">
+  当前数据库中共有百度百科实体页面{{status.ne_count}}个，三元组数据{{status.infoboxtuple_count}}个。
+  <br>
+  三元组谓词总数{{status.verb_count}}个。
+</p>
+
+{% endblock %}
