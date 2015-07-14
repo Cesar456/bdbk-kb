@@ -1,3 +1,6 @@
-from ui.urls import urlpatterns as ui_urlpatterns
+from django.conf.urls import include, url
 
-urlpatterns = ui_urlpatterns
+urlpatterns = [
+    url(r'^bdbk/', include('bdbk.urls')),
+    url(r'^ui/', include('ui.urls')),
+]
