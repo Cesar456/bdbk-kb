@@ -5,7 +5,8 @@ from StringIO import StringIO
 
 from lxml import etree
 
-from textutils.process_relations import cleanup_verb
+from .infobox_extractor import extract_from_etree
+from .textutils.process_relations import cleanup_verb
 
 
 class Extractor(object):
@@ -17,53 +18,7 @@ class Extractor(object):
     def get_tuples(self, html):
         '''Handles a real page, returns its tuple list
         '''
-        tuples = []
-
-        page_biitems = html.xpath("//*[@class='biItem']")
-        for i in page_biitems:
-            page_bititle = i.xpath(".//*[@class='biTitle']//text()")
-            if len(page_bititle) == 0:
-                continue
-
-            bititle = re.sub(r'[\xa0\s]', '', ''.join(page_bititle))
-            bititle = cleanup_verb(bititle)
-            if not bititle:
-                continue
-
-            # if we have a <br>, then multiple bicontents should be produced
-            page_bicontents = i.xpath(".//*[@class='biContent']//text()|.//a")
-            target = ''
-
-            in_href=False
-            for bicontent in page_bicontents:
-                if not isinstance(bicontent, unicode) and not isinstance(bicontent, str):
-                    if in_href:
-                        target += '}}'
-
-                    in_href = True
-                    href = bicontent.xpath('./@href')
-                    if len(href):
-                        # some links are just clickable HTML of foot-reference,
-                        # so we don't have to include them
-                        target += '{{link:%s|' % href[0]
-                    else:
-                        in_href = False
-                else:
-                    if '\n' in bicontent:
-                        target += re.sub(r'[\xa0\s\n]', '', bicontent)
-                        if target:
-                            tuples.append((bititle, target))
-                        target = ''
-                    else:
-                        target += bicontent.strip()
-
-                    if in_href:
-                        in_href = False
-                        target += '}}'
-
-            tuples.append((bititle, target))
-
-        return tuples
+        return extract_from_etree(html)
 
     def get_title(self, html):
         # page title

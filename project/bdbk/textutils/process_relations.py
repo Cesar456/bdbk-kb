@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 
 import re
 import sys
@@ -21,7 +21,7 @@ meaning_less_relation = re.compile(\
     )
 
 confusing_unicode_spaces = re.compile(\
-    u'[\u200B\uE812\u200D\uFEFF\\s?。]')
+    u'[\u200B\uE812\u200D\uFEFF\xa0\\s?。]')
 
 def get_content_from_regx(regx, s):
     match = re.match(regx, s)
