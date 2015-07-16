@@ -36,3 +36,10 @@ ROOT_URLCONF = 'project.urls'
 STATIC_URL = '/static/'
 # set this to the static file directory you want to serve in a production server
 # STATIC_ROOT = 'static/'
+
+BDBK_SETTINGS = {
+    'page_source_mongodb': {
+        'host': 'localhost',
+        'port': 11111,
+    }
+}

@@ -10,6 +10,7 @@
     page_content: html, main page content.
     sidebar_content: html, side bar content.
     search_sidebar_content: html, search side bar
+    container: page content
 
 {% endcomment %}
 
@@ -80,7 +81,8 @@
     <!-- Page Content -->
     <div class="container">
 
-        <div class="row">
+      {% block container %}
+      <div class="row">
 
             <div class="col-lg-8">
               {% block page_content %}
@@ -111,7 +113,8 @@
 
             </div>
 
-        </div>
+      </div>
+      {% endblock %}
         <!-- /.row -->
 
         <hr>
