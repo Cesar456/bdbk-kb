@@ -12,6 +12,26 @@ from .page_extractor import extractor as page_extractor
 
 logger = logging.getLogger(__name__)
 
+class Category(models.Model):
+    '''
+    Ver: 1
+
+    Database Schema:
+    name: name of this category, unique across this table
+    '''
+    name = models.CharField(max_length=255, db_index=True, unique=True)
+
+    @staticmethod
+    def getCategoryByName(name, _cache={}):
+        if name in _cache:
+            logger.debug('Category cache hit: %s', name)
+            return _cache[name]
+        else:
+            (cat_object, created) = Category.objects.get_or_create(name=name)
+            logger.debug('Category cache miss: %s, create: %r', name, created)
+            _cache[name] = cat_object
+            return cat_object
+
 class Verb(models.Model):
     '''
     Ver: 1
@@ -71,6 +91,7 @@ class NamedEntity(models.Model):
     search_term = models.CharField(max_length=255, db_index=True)
     bdbk_url = models.CharField(max_length=1024)
     last_modified = models.DateTimeField(null=True, blank=True)
+    categories = models.ManyToManyField('Category')
 
     @staticmethod
     def updateFromPage(url, content, last_modified):
@@ -120,12 +141,16 @@ class NamedEntity(models.Model):
             logger.debug('updateFromPage(%s): db record created', url)
 
         if should_edit:
-            page_title, search_term, infoboxtuples = page_extractor.extract(content)
+            page_title, search_term, cats, infoboxtuples = page_extractor.extract(content)
             ne_object.name = page_title
             ne_object.search_term = search_term
             ne_object.last_modified = last_modified
             ne_object.bdbk_url = real_url
             ne_object.save()
+
+            ne_object.categories.clear()
+            for cat in cats:
+                ne_object.categories.add(Category.getCategoryByName(cat))
 
             # currently we remove all old infoboxtuples, this is not good
             ne_object.infoboxtuple_set.all().delete()

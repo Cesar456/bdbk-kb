@@ -57,6 +57,10 @@ class Extractor(object):
     def is_lemma_list(self, html):
         return len(html.xpath("//*[@id='lemma-list']")) != 0
 
+    def get_cat_list(self, html):
+        for i in html.xpath('//*[@class="taglist"]'):
+            yield ''.join([x.strip() for x in i.itertext()])
+
     def extract(self, content):
         '''
         Returns:
@@ -75,8 +79,9 @@ class Extractor(object):
         # if not self.is_lemma_list(page):
         # abstract = self.get_abstract(page)
         tuples = self.get_tuples(page)
+        cat_list = self.get_cat_list(page)
 
-        return (title, search_term, tuples)
+        return (title, search_term, cat_list, tuples)
 
 
 extractor = Extractor()
