@@ -245,6 +245,13 @@ def ShowTuplesForNamedEntity(request, nepk):
             'content': resolve_content_links(infoboxtuple.content),
         })
 
+    def getCatString(ne_object):
+        cat_names = []
+        for i in ne_object.categories.all():
+            cat_names.append(i.name)
+
+        return ','.join(cat_names)
+
     result = {
         'namedentity':{
             'ne_id': nepk,
@@ -252,7 +259,8 @@ def ShowTuplesForNamedEntity(request, nepk):
             'ne_search_term': ne_object.search_term,
             'ne_last_modified': ne_object.last_modified.strftime('%Y-%m-%d %H:%M:%S') if ne_object.last_modified else 'Not Specified',
             'ne_bdbk_url': ne_object.bdbk_url,
-            'ne_infobox': tuples
+            'ne_infobox': tuples,
+            'ne_cats': getCatString(ne_object),
             },
     }
     result.update(populate_random_suggestion())
