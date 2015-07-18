@@ -10,9 +10,12 @@ from lxml import etree
 from .textutils.process_relations import cleanup_verb
 
 
+def remove_links(txt):
+    return re.sub(r'{{link:[^\|]+\|([^\}]+)}}', lambda x: x.group(1), txt)
+
 def get_inner_text_with_hrefs(element):
     skip_tags = ['script', 'img', 'sup']
-    continue_tags = ['a', 'b', 'u', 'i', 'span']
+    continue_tags = ['a', 'b', 'u', 'i', 'span', 'em']
     newpara_tags = ['div', 'br', 'p', 'dt', 'dd']
 
     def node_text(node, isfirst=False):
@@ -87,7 +90,7 @@ def infobox_extractor_1(root):
 
             bititle = get_inner_text_with_hrefs(bititle_elements[0])
             bicontent = get_inner_text_with_hrefs(bicontent_elements[0])
-            yield cleanup_verb(bititle), bicontent
+            yield remove_links(cleanup_verb(bititle)), bicontent
 
             counter += 1
 
@@ -114,7 +117,7 @@ def infobox_extractor_2(root):
 
             bititle = get_inner_text_with_hrefs(bititle_elements[0])
             bicontent = get_inner_text_with_hrefs(bicontent_elements[0])
-            yield cleanup_verb(bititle), bicontent
+            yield remove_links(cleanup_verb(bititle)), bicontent
 
             counter += 1
 
