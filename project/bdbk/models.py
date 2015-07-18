@@ -8,7 +8,7 @@ from django.db import models
 from .page_extractor import extractor as page_extractor
 
 # data migration must be performed on every schema update
-# version: 8
+# version: 10
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ class Verb(models.Model):
 
 class NamedEntityAlias(models.Model):
     '''
-    Ver: 1
+    Ver: 2
 
     Database Schema:
     link_to: where does this alias link to.
@@ -63,7 +63,7 @@ class NamedEntityAlias(models.Model):
 
     '''
     link_to = models.ForeignKey('NamedEntity')
-    link_from = models.CharField(max_length=255, db_index=True)
+    link_from = models.CharField(max_length=255, db_index=True, unique=True)
 
 class NamedEntity(models.Model):
     '''
@@ -103,27 +103,25 @@ class NamedEntity(models.Model):
                 return (False, url, None)
 
             real_url, parms = url.encode('utf8').split('?', 1)
-            fromtitle = None
-            fromid = None
+            urlquery = {}
             for i in parms.split('&'):
                 key, value = i.split('=')
-                if key == 'fromtitle':
-                    fromtitle = urllib.unquote(value).decode('utf8')
-                elif key == 'fromid':
-                    fromid = urllib.unquote(value).decode('utf8')
+                urlquery[key] = urllib.unquote(value).decode('utf8')
 
-            if fromtitle and fromid:
-                return (True, real_url, (fromtitle, fromid))
+            if 'fromtitle' in urlquery and 'fromid' in urlquery:
+                return (True, real_url, urlquery['fromtitle'])
+
+            if 'fromid' not in urlquery and urlquery['fromtitle'] == '@#Protect@#':
+                return (False, real_url, None)
+
+            if 'type' in urlquery and urlquery['type'] == 'syn' and 'fromtitle' in urlquery:
+                return (True, real_url, urlquery['fromtitle'])
 
             logger.warn('bdbk url: %s, does not match common alias signature, needs investigation', url)
             return (False, real_url, None)
 
 
-        is_alias, real_url, from_info = isAliasUrl()
-        if from_info:
-            from_title, from_id = from_info
-        elif is_alias:
-            logger.debug('bdbk url: %s, does not have a good alias signature', url)
+        is_alias, real_url, from_title = isAliasUrl()
 
         try:
             ne_object = NamedEntity.objects.get(bdbk_url=real_url)
@@ -164,7 +162,7 @@ class NamedEntity(models.Model):
             logger.debug('updateFromPage(%s): %d infobox tuples inserted', url, len(infoboxtuples))
 
         # update aliases
-        if from_info:
+        if from_title:
             (alias, created) = NamedEntityAlias.objects.get_or_create(link_from=from_title, link_to=ne_object)
             logger.debug('updateFromPage(%s): create alias as %s: %r', url, from_title, created)
 
