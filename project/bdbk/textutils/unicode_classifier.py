@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 import re
 
 ranges = {
@@ -108,7 +108,7 @@ class Classifier(object):
                 if od >= i[0] and od <= i[1]:
                     good = True
                     break
-                    
+
             if not good:
                 return False
 
