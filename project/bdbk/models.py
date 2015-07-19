@@ -180,6 +180,7 @@ class InfoboxTuple(models.Model):
     content:
           links in attribute values are encoded as: {{link:<relative_or_abs_url>|text}}
     '''
+    id = models.BigIntegerField(primary_key=True)
     named_entity = models.ForeignKey('NamedEntity', db_index=True)
     verb = models.ForeignKey('Verb', db_index=True)
     content = models.TextField()
