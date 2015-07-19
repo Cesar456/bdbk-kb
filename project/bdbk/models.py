@@ -114,7 +114,9 @@ class NamedEntity(models.Model):
             if 'fromid' not in urlquery and urlquery['fromtitle'] == '@#Protect@#':
                 return (False, real_url, None)
 
-            if 'type' in urlquery and urlquery['type'] == 'syn' and 'fromtitle' in urlquery:
+            if 'type' in urlquery and\
+               (urlquery['type'] == 'syn' or urlquery['type'] == 'search') and\
+               'fromtitle' in urlquery:
                 return (True, real_url, urlquery['fromtitle'])
 
             logger.warn('bdbk url: %s, does not match common alias signature, needs investigation', url)
