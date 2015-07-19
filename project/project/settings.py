@@ -25,7 +25,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'bdbk',
     'zhwiki',
-    'processor',
     'ui',
 ]
 MIDDLEWARE_CLASSES = []
