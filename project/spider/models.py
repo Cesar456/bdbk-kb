@@ -1,8 +1,20 @@
 from django.db import models
 
+# data migration must be performed on every schema update
+# version: 1
 
 # Create your models here.
 class SpiderEntry(models.Model):
+    '''
+    Ver: 1
+
+    Database Schema:
+    url: url of this entry.
+    actual_url: real url after HTTP redirects. null=<new entry>
+    redirect_chain: how was url ==> actual_url, urls are split by newline(\n). (currently not used)
+    last_modified: last this entry was modifed(downloaded). null=<new entry>
+    mongodb_id: where is this page stored in mongodb. null=<not existing>
+    '''
     url = models.CharField(max_length=512)
     actual_url = models.CharField(max_length=512, blank=True, null=True)
     redirect_chain = models.TextField(blank=True, null=True)
