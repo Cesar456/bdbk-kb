@@ -9,6 +9,7 @@ from bson import binary as pymongo_binary
 
 from project import setup_database
 from django.conf import settings
+from django.utils import timezone
 
 from bdbk.models import NamedEntity
 
@@ -31,7 +32,7 @@ class BaiduSpider(scrapy.Spider):
         if entry.mongodb_id:
             self.mongodb.baidu.data.delete_one({'_id': entry.mongodb_id})
 
-        updatetime = datetime.datetime.now()
+        updatetime = timezone.make_aware(datetime.datetime.now())
 
         try:
             NamedEntity.updateFromPage(response.url, response.body, updatetime)
