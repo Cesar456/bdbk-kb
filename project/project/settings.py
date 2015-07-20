@@ -30,6 +30,9 @@ INSTALLED_APPS = [
 ]
 MIDDLEWARE_CLASSES = []
 
+USE_TZ = True
+TIME_ZONE = 'Asia/Shanghai'
+
 ALLOWED_HOSTS = ['*']
 ROOT_URLCONF = 'project.urls'
 
