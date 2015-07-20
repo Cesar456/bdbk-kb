@@ -141,9 +141,10 @@ if __name__ == '__main__':
         else:
             source = open(args.page_source).read()
 
-        page_title, search_term, tuples = extractor.extract(source)
+        page_title, search_term, cat_list, tuples = extractor.extract(source)
         print 'Title:', page_title
         print 'Search Term:', search_term
+        print 'Categories:', ','.join(cat_list)
 
         for tuple in tuples:
             print '(', tuple[0], ',', tuple[1], ')'

@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+# -*- coding: utf-8 -*-
 import code
 import re
 import urllib2
@@ -115,8 +115,20 @@ def infobox_extractor_2(root):
                             'got (len(bititle)=%d, len(bicontent)=%d)' % (len(bititle_elements), len(bicontent_elements))
                     raise ValueError(error)
 
+            if len(bicontent_elements[0].xpath('.//dl'))>0:
+                # we should extract expanded values
+                bicontent_elements = bicontent_elements[0].xpath('.//dd')
+                remove_tailing_expand_sign=True
+            else:
+                remove_tailing_expand_sign=False
+
             bititle = get_inner_text_with_hrefs(bititle_elements[0])
             bicontent = get_inner_text_with_hrefs(bicontent_elements[0])
+            if remove_tailing_expand_sign:
+                bicontent = bicontent.strip()
+                if bicontent[-2:] == u'收起':
+                    bicontent = bicontent[:-2]
+
             yield remove_links(cleanup_verb(bititle)), bicontent
 
             counter += 1
