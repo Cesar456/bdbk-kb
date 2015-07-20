@@ -148,7 +148,7 @@ if __name__ == '__main__':
 
     page_source = urllib2.urlopen(args.url).read()
 
-    parser = etree.HTMLParser()
+    parser = etree.HTMLParser(encoding='utf8')
     page = etree.parse(StringIO(page_source), parser)
 
     tuples = infobox_extractor_1(page) + infobox_extractor_2(page)

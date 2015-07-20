@@ -69,7 +69,7 @@ class Extractor(object):
         infoboxtuples -> [tuple, ...]
         tuple -> (verb, content)
         '''
-        parser = etree.HTMLParser()
+        parser = etree.HTMLParser(encoding='utf8')
         page = etree.parse(StringIO(content), parser)
 
         title = self.get_title(page)
