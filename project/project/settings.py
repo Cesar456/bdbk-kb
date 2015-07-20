@@ -70,7 +70,7 @@ LOGGING = {
         'file-maintaince': {
             'level': 'INFO',
             'class':'logging.handlers.RotatingFileHandler',
-            'filename': 'logs/django_request.log',
+            'filename': 'logs/django_maintaince.log',
             'maxBytes': 1024*1024*5,
             'backupCount': 20,
             'formatter':'verbose',
