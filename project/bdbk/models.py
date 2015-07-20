@@ -4,6 +4,7 @@ import urllib
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.models import fields
 
 from .page_extractor import extractor as page_extractor
 
@@ -11,6 +12,12 @@ from .page_extractor import extractor as page_extractor
 # version: 10
 
 logger = logging.getLogger(__name__)
+
+class BigAutoField(fields.AutoField):
+    def db_type(self, connection):
+        if 'mysql' in connection.__class__.__module__:
+            return 'bigint AUTO_INCREMENT'
+        return super(BigAutoField, self).db_type(connection)
 
 class Category(models.Model):
     '''
@@ -180,7 +187,7 @@ class InfoboxTuple(models.Model):
     content:
           links in attribute values are encoded as: {{link:<relative_or_abs_url>|text}}
     '''
-    id = models.BigIntegerField(primary_key=True)
+    id = models.BigAutoField(primary_key=True)
     named_entity = models.ForeignKey('NamedEntity', db_index=True)
     verb = models.ForeignKey('Verb', db_index=True)
     content = models.TextField()
