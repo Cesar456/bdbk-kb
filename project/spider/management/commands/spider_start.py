@@ -1,5 +1,6 @@
 import scrapy
 from django.core.management.base import BaseCommand, CommandError
+from django.conf import settings
 from scrapy.crawler import CrawlerProcess
 
 from spider.spider import BaiduSpider
@@ -22,7 +23,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         process = CrawlerProcess({
             'USER_AGENT': options['user_agent'],
-            'DOWNLOAD_DELAY': options['download_delay']
+            'DOWNLOAD_DELAY': options['download_delay'],
+            'LOG_FILE': settings.SCRAPY_LOG_FILE,
+            'LOG_LEVEL': settings.SCRAPY_LOG_LEVEL,
         })
 
         process.crawl(BaiduSpider)

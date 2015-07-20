@@ -28,6 +28,7 @@ class BaiduSpider(scrapy.Spider):
             yield scrapy.Request(entry.url, callback=self.handle_page, meta={'dbo': entry})
 
     def handle_page(self, response):
+        logger = logging.getLogger('spider.handler')
         entry = response.request.meta['dbo']
         if entry.mongodb_id:
             self.mongodb.baidu.data.delete_one({'_id': entry.mongodb_id})
@@ -37,7 +38,8 @@ class BaiduSpider(scrapy.Spider):
         try:
             NamedEntity.updateFromPage(response.url, response.body, updatetime)
         except Exception as e:
-            logging.exception(e)
+            logger.exception(e)
+            logger.error('failed to update page: %s', response.url)
 
         newid = self.mongodb.baidu.data.insert({
             'url': response.request.url,
