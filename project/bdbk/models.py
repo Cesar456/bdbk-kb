@@ -11,8 +11,6 @@ from .page_extractor import extractor as page_extractor
 # data migration must be performed on every schema update
 # version: 10
 
-logger = logging.getLogger(__name__)
-
 class BigAutoField(fields.AutoField):
     def db_type(self, connection):
         if 'mysql' in connection.__class__.__module__:
@@ -30,6 +28,8 @@ class Category(models.Model):
 
     @staticmethod
     def getCategoryByName(name, _cache={}):
+        logger = logging.getLogger('bdbk.extractor')
+
         if name in _cache:
             logger.debug('Category cache hit: %s', name)
             return _cache[name]
@@ -50,6 +50,8 @@ class Verb(models.Model):
 
     @staticmethod
     def getVerbByName(name, _cache = {}):
+        logger = logging.getLogger('bdbk.extractor')
+
         if name in _cache:
             logger.debug('Verb cache hit: %s', name)
             return _cache[name]
@@ -102,6 +104,8 @@ class NamedEntity(models.Model):
 
     @staticmethod
     def updateFromPage(url, content, last_modified):
+        logger = logging.getLogger('bdbk.extractor')
+
         def isAliasUrl():
             '''
             Returns (is_alias, fromtitle, fromid)

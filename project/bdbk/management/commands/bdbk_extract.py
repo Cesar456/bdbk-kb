@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from django.core.management.base import BaseCommand, CommandError
 import datetime
 import sys
 import time
+
+from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
 from bdbk.models import *
 from bdbk.page_extractor import extractor
+
 
 class Command(BaseCommand):
     help = 'I will read baidu baike and produce you the info tuples of its infobox.'
