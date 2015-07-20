@@ -1,9 +1,11 @@
 import datetime
 import logging
 import re
+import zlib
 
 import pymongo
 import scrapy
+from bson import binary as pymongo_binary
 
 from project import setup_database
 from django.conf import settings
@@ -39,7 +41,7 @@ class BaiduSpider(scrapy.Spider):
         newid = self.mongodb.baidu.data.insert({
             'url': response.request.url,
             'actualurl': response.url,
-            'content': response.body,
+            'content': pymongo_binary.Binary(zlib.compress(response.body, 9)),
             'lastmodifytime': updatetime.strftime('%Y-%m-%d %H:%M:%S'),
         })
 
