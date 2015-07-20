@@ -13,7 +13,6 @@ if __name__  == '__main__':
         description='parallel process mongodb baidu baike data.')
     parser.add_argument('--mongod-host', type=str, required=True, help='host of mongo db server.')
     parser.add_argument('--mongod-port', type=int, required=True, help='port of mongo db server.')
-    parser.add_argument('--worker-dir', type=str, required=True, help='work directory for workers(temporary files may be stored there).')
     parser.add_argument('--worker-job-count', type=int, default=100000, help='how many pages should a worker work on.')
     parser.add_argument('--worker-count', type=int, default=10, help='how many workers should be there.')
 
@@ -34,12 +33,10 @@ if __name__  == '__main__':
 
         logging.info('worker %s started, working on doc %d-%d', worker_id, slice_from, slice_to)
 
-        local_log_fn = '%s/worker-%s-%d-%d.log' % (args.worker_dir, worker_id, slice_from, slice_to)
-        subprocess.call(['python', 'extract_tuples_from_infobox.py',
+        subprocess.call(['/usr/bin/env', 'python', 'manage.py', 'bdbk_extract'
                          '--src', 'mongodb',
                          '--mongod-host', args.mongod_host,
                          '--mongod-port', str(args.mongod_port),
-                         '--log', local_log_fn,
                          '--mongod-from-to', '%d-%d' % (slice_from, slice_to)
         ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
