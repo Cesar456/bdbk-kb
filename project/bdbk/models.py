@@ -122,7 +122,7 @@ class NamedEntity(models.Model):
             if 'fromtitle' in urlquery and 'fromid' in urlquery:
                 return (True, real_url, urlquery['fromtitle'])
 
-            if 'fromid' not in urlquery and urlquery['fromtitle'] == '@#Protect@#':
+            if 'fromid' not in urlquery and urlquery.get('fromtitle', '') == '@#Protect@#':
                 return (False, real_url, None)
 
             if 'type' in urlquery and\
