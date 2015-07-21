@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
-
 import datetime
 import sys
 import time
+import zlib
 
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
@@ -70,15 +69,21 @@ class Command(BaseCommand):
 
         def iterator():
             def convert_date_string(s):
-                year, month, day = s.split('-')
-                return timezone.make_aware(datetime.datetime(int(year), int(month), int(day)))
+                date, time = s.split(' ')
+                year, month, day = date.split('-')
+                hour, minute, second = time.split(':')
+                return timezone.make_aware(
+                    datetime.datetime(
+                        int(year), int(month), int(day),
+                        int(hour), int(minute), int(second)
+                    ))
 
             if slice_skip == -1:
                 for item in data_set.find():
-                    yield item['actualurl'], convert_date_string(item['lastmodifytime']), item['content']
+                    yield item['actualurl'], convert_date_string(item['lastmodifytime']), zlib.decomporess(item['content'])
             else:
                 for item in data_set.find().skip(slice_skip).limit(slice_limit):
-                    yield item['actualurl'], convert_date_string(item['lastmodifytime']), item['content']
+                    yield item['actualurl'], convert_date_string(item['lastmodifytime']), zlib.decompress(item['content'])
 
         do_extract(iterator)
         client.close()

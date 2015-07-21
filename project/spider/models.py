@@ -1,5 +1,6 @@
 from django.db import models
 
+
 # data migration must be performed on every schema update
 # version: 1
 

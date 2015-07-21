@@ -8,6 +8,7 @@ from django.db.models import fields
 
 from .page_extractor import extractor as page_extractor
 
+
 # data migration must be performed on every schema update
 # version: 10
 

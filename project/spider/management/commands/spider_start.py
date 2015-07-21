@@ -1,6 +1,6 @@
 import scrapy
-from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
 from scrapy.crawler import CrawlerProcess
 
 from spider.spider import BaiduSpider
