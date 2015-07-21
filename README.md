@@ -1,7 +1,7 @@
 ### 准备工作
 在开始部署项目前，需要准备的有：
 
-- 数据库：MySQL，需要创建一个新数据库。修改`project/settings.py`中对应的数据库名称，用户名和密码。
+- 数据库：MySQL，需要创建一个新数据库。修改`project/settings.py`中对应的数据库名称，用户名和密码。数据库编码使用utf8_unicode_ci。
 - 数据库：MongoDB，用于存储爬取的网页数据，需要修改`project/settings.py`中的数据库主机名和端口。
 - python2.7以及相关的包：推荐使用virtualenv。
 
