@@ -6,6 +6,7 @@ import zlib
 import pymongo
 import scrapy
 from bson import binary as pymongo_binary
+from bson import objectid
 
 from project import setup_database
 from django.conf import settings
@@ -31,7 +32,7 @@ class BaiduSpider(scrapy.Spider):
         logger = logging.getLogger('spider.handler')
         entry = response.request.meta['dbo']
         if entry.mongodb_id:
-            self.mongodb.baidu.data.delete_one({'_id': entry.mongodb_id})
+            self.mongodb.baidu.data.delete_one({'_id': objectid.ObjectId(entry.mongodb_id)})
 
         updatetime = timezone.make_aware(datetime.datetime.now())
 
