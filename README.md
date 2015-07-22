@@ -8,7 +8,7 @@
 ### 使用的python包
 - argparse(1.3.0)
 - django(1.8.3)
-- xml(3.4.4)
+- lxml(3.4.4)
 - MySQL-python(1.2.5)
 - pymongo(3.0.3)
 - pytz(2013.7)
