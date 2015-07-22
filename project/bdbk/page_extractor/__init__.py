@@ -6,7 +6,7 @@ from StringIO import StringIO
 from lxml import etree
 
 from .infobox_extractor import extract_from_etree
-from .textutils.process_relations import cleanup_verb
+from bdbk.textutils.process_relations import cleanup_verb
 
 
 class Extractor(object):
