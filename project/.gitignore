@@ -1,2 +1,4 @@
 nlp_project.db
 */migrations/
+logs/
+testdata/
