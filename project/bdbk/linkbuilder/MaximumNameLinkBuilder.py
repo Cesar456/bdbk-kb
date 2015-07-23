@@ -15,7 +15,7 @@ class MaximumNameLinkBuilder(LinkBuilder):
         pipe = subprocess.Popen(os.path.dirname(__file__) + '/max_common_string_in_set',
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
-#                                stderr=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
                                 bufsize=0)
 
         # FIXME: newline char replace?
