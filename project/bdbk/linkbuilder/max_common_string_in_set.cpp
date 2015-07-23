@@ -85,8 +85,10 @@ int main(){
   std::wstring line;
   while(true){
     std::getline(std::wcin, line);
-    if(!line.size())
+    if(!line.size()){
+      std::cerr<<"all key-value pairs are read."<<std::endl;
       break;
+    }
 
     size_t pos = line.find(L'\t');
     if(pos == std::wstring::npos){
@@ -103,8 +105,10 @@ int main(){
 
   while(true){
     std::getline(std::wcin, line);
-    if(!line.size())
+    if(!line.size()){
+      std::cerr<<"null string received, exiting."<<std::endl;
       break;
+    }
 
     std::wstring* output_str;
     std::wstring nolink_part;
@@ -131,6 +135,8 @@ int main(){
     }
     std::wcout<<std::endl;
   }
+
+  std::cerr<<"really exiting..."<<std::endl;
 
   return 0;
 }
