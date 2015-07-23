@@ -29,6 +29,9 @@ class BaiduSpider(scrapy.Spider):
             yield scrapy.Request(entry.url, callback=self.handle_page, meta={'dbo': entry})
 
     def handle_page(self, response):
+        if not response.xpath('//input[@id="query"]'):
+            yield response.request
+
         logger = logging.getLogger('spider.handler')
         entry = response.request.meta['dbo']
         if entry.mongodb_id:
