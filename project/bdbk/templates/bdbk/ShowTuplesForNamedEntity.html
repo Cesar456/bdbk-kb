@@ -20,7 +20,8 @@ randomnes = {
 status = {
 'ne_count': integer,
 'infoboxtuple_count': integer,
-'verb_count': integer
+'verb_count': integer,
+'db_version': str
 }
 {% endcomment %}
 
@@ -80,6 +81,7 @@ status = {
     <li>命名实体总数：{{ status.ne_count }}</li>
     <li>谓词总数： {{ status.verb_count }}</li>
     <li>三元组总数： {{ status.infoboxtuple_count }}</li>
+    <li>数据库版本：{{ status.db_version }}</li>
   </ul>
 </div>
 

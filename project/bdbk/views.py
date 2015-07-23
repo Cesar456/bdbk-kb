@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404, render
 from django.utils.html import escape
 from django.views.decorators.http import require_http_methods
 
-from .models import InfoboxTuple, NamedEntity, Verb
+from .models import InfoboxTuple, NamedEntity, Verb, DBVersion
 
 
 def resolve_content_links(content):
@@ -41,7 +41,8 @@ def populate_db_status():
         'status':{
             'ne_count': total_ne_count,
             'infoboxtuple_count': total_tuple_count,
-            'verb_count': total_verb_count
+            'verb_count': total_verb_count,
+            'db_version': DBVersion
         }
     }
 

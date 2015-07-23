@@ -10,12 +10,26 @@ from .page_extractor import extractor as page_extractor
 
 
 # data migration must be performed on every schema update
-# version: 10
+# version: 11
+DBVersion = '0.11'
 
-class BigAutoField(fields.AutoField):
+class BigForeignKey(models.ForeignKey):
+    def db_type(self, connection):
+        """ Adds support for foreign keys to big integers as primary keys.
+        """
+        rel_field = self.rel.get_related_field()
+        if (isinstance(rel_field, BigAutoField) or
+                (not connection.features.related_fields_match_type and
+                isinstance(rel_field, (BigIntegerField, )))):
+            return BigIntegerField().db_type(connection=connection)
+        return super(BigForeignKey, self).db_type(connection)
+
+class BigAutoField(models.fields.AutoField):
     def db_type(self, connection):
         if 'mysql' in connection.__class__.__module__:
             return 'bigint AUTO_INCREMENT'
+        elif 'postgresql' in connection.__class__.__module__:
+            return 'bigserial'
         return super(BigAutoField, self).db_type(connection)
 
 class Category(models.Model):
@@ -196,3 +210,27 @@ class InfoboxTuple(models.Model):
     named_entity = models.ForeignKey('NamedEntity', db_index=True)
     verb = models.ForeignKey('Verb', db_index=True)
     content = models.TextField()
+
+    def delete(self, *args, **kwargs):
+        # delete all links of this tuple to make sure there are no
+        # dead links in db
+        self.infoboxtupelink_set.delete()
+        super(InfoboxTuple, self).delete(*args, **kwargs)
+
+class InfoboxTupleLink(models.Model):
+    '''
+    Ver: 1
+
+    Database Schema:
+
+    id:
+    start:
+    end:
+    infoboxtuple:
+    linkcontent: {{alias_id:\d+}}|{{ne_id:\d+}}
+    '''
+    id = BigAutoField(primary_key=True)
+    start = models.IntegerField()
+    end = models.IntegerField()
+    infoboxtuple = BigForeignKey('InfoboxTuple')
+    linkcontent = models.CharField(max_length=255)

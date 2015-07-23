@@ -5,7 +5,8 @@
 status = {
 'ne_count': integer,
 'infoboxtuple_count': integer,
-'verb_count': integer
+'verb_count': integer,
+'db_version': str,
 }
 {% endcomment %}
 
@@ -22,6 +23,8 @@ status = {
   当前数据库中共有百度百科实体页面{{status.ne_count}}个，三元组数据{{status.infoboxtuple_count}}个。
   <br>
   三元组谓词总数{{status.verb_count}}个。
+  <br>
+  数据库版本{{ status.db_version }}。
 </p>
 
 {% endblock %}
