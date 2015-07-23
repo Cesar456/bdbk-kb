@@ -2,3 +2,4 @@ nlp_project.db
 */migrations/
 logs/
 testdata/
+bdbk/linkbuilder/max_common_string_in_set
