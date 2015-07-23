@@ -1,5 +1,5 @@
 nlp_project.db
 */migrations/
-logs/
+logs/*.log
 testdata/
 bdbk/linkbuilder/max_common_string_in_set
