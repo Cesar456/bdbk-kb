@@ -1,8 +1,10 @@
 import json
 import random
 import re
+import zlib
 
 import pymongo
+from bson import objectid
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponse, HttpResponseRedirect
@@ -61,31 +63,7 @@ def populate_random_suggestion():
         'randomnes': random_nes
     }
 
-def get_page_source_db():
-    db_setting = settings.BDBK_SETTINGS['page_source_mongodb']
-    host = db_setting['host']
-    port = db_setting['port']
-    return pymongo.MongoClient(host, port).baidu.data
-
-page_source_db = get_page_source_db()
 # views starts
-
-def getPageSource(request):
-    url = request.GET.get('url', None)
-    if not url:
-        raise Http404('page not found')
-
-    iframe = request.GET.get('iframe', False)
-    if iframe == 'true':
-        page_source = page_source_db.find({'url':url})
-        page_source = page_source[0]['content']
-        return HttpResponse(page_source,content_type='text/html')
-
-    context = {
-        'page_source_url': url,
-        'url_parameters': request.GET.urlencode(),
-    }
-    return render(request, 'bdbk/GetPageSource.html', context)
 
 def About(request):
     return render(request, 'bdbk/About.html', {})

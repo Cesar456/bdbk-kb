@@ -10,6 +10,4 @@ urlpatterns = patterns('bdbk.views',
     url(r'^advancedSearch/$', 'AdvancedSearch', name='AdvancedSearch'),
 
     url(r'^about/$', 'About', name='About'),
-
-    url(r'^getPageSource/$', 'getPageSource', name='getPageSource'),
 )
