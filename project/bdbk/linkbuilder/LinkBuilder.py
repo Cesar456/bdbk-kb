@@ -34,7 +34,7 @@ class LinkBuilder(object):
     def resolve_name(self, name):
         try:
             search_alias = NamedEntityAlias.objects.get(link_from=name)
-            yield search_alias.link_to, False
+            yield search_alias, False
         except ObjectDoesNotExist as e:
             pass
 
