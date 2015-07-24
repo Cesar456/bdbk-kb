@@ -27,6 +27,11 @@ $(window).resize(function(){
 d3.json(data_url, function(error, json){
   if(error) throw error;
 
+  // fix the first node
+  json.nodes[0].x = width / 2;
+  json.nodes[0].y = height / 2;
+  json.nodes[0].fixed = true;
+
   force.nodes(json.nodes)
     .links(json.links)
     .linkDistance(70)

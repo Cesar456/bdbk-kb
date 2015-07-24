@@ -308,7 +308,6 @@ def namedEntityLinks(request, nepk):
 
                 return match.group(3)
 
-            print obj.pk, tuple.pk
             re.sub(r'\{\{([a-zA-Z_]+):([^|]+)\|(.*?)\}\}', handle_links, tuple.content)
 
             for link in tuple.infoboxtuplelink_set.all():
@@ -355,17 +354,21 @@ def namedEntityLinks(request, nepk):
     new_nodes = []
     new_links = []
     new_neid_nodeid_map = {}
-    for nodeid, node in nodes.items():
-        new_nodes.append({
-            'name': node['name'],
-            'ne_pk': node['nepk'],
-            'group': node['group'],
-        })
-        new_neid_nodeid_map[nodeid] = len(new_nodes) - 1
 
     for link in links:
-        source = new_neid_nodeid_map[link['source']]
-        target = new_neid_nodeid_map[link['target']]
+        def addNode(pk):
+            if pk not in new_neid_nodeid_map:
+                node = nodes[pk]
+                new_nodes.append({
+                    'name': node['name'],
+                    'ne_pk': node['nepk'],
+                    'group': node['group'],
+                })
+                new_neid_nodeid_map[pk] = len(new_nodes) - 1
+            return new_neid_nodeid_map[pk]
+
+        source = addNode(link['source'])
+        target = addNode(link['target'])
         new_links.append({
             'source': source,
             'target': target
