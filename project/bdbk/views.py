@@ -289,8 +289,11 @@ def namedEntityLinks(request, nepk):
                 link = match.group(2)
                 if schema == 'link':
                     real_url = 'http://baike.baidu.com' + link
-                    try:
-                        ne = NamedEntity.objects.exclude(pk=obj.pk).get(bdbk_url=real_url)
+
+                    # we are currently unable to resolve duplicate bdbk_urls, so...
+                    ne = NamedEntity.objects.exclude(pk=obj.pk).get(bdbk_url=real_url)
+                    if len(ne) > 0:
+                        ne = ne[0]
                         if ne.pk not in nodes:
                             nodes[ne.pk] = {
                                 "name": ne.name,
@@ -303,7 +306,7 @@ def namedEntityLinks(request, nepk):
                             "source": obj.pk,
                             "target": ne.pk
                         })
-                    except ObjectDoesNotExist as e:
+                    else:
                         pass
 
                 return match.group(3)
