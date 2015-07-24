@@ -70,9 +70,13 @@ class Command(BaseCommand):
 
         def iterator():
             def convert_date_string(s):
-                date, time = s.split(' ')
-                year, month, day = date.split('-')
-                hour, minute, second = time.split(':')
+                if ' ' in s:
+                    date, time = s.split(' ')
+                    year, month, day = date.split('-')
+                    hour, minute, second = time.split(':')
+                else:
+                    year, month, day = date.split('-')
+                    hour, minute, second = 0, 0, 0
                 return timezone.make_aware(
                     datetime.datetime(
                         int(year), int(month), int(day),
