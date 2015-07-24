@@ -10,4 +10,7 @@ urlpatterns = patterns('bdbk.views',
     url(r'^advancedSearch/$', 'AdvancedSearch', name='AdvancedSearch'),
 
     url(r'^about/$', 'About', name='About'),
+
+    # json API
+    url(r'^graph/namedEntityLinks/(?P<nepk>\d+)/$', 'namedEntityLinks', name='namedEntityLinks'),
 )

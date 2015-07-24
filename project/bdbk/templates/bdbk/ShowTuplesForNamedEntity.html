@@ -1,6 +1,9 @@
 {% extends 'bdbk/BasePage.html' %}
+{% load static %}
 
 {% comment 'context dicts' %}
+nepk = 12345
+
 namedentity = {
 'ne_title': '...',
 'ne_search_term': '...',
@@ -43,6 +46,9 @@ status = {
 
 <hr>
 
+<div id="svg-container" class="text-center">
+</div>
+<hr>
 <table class="table table-striped">
   <thead>
     <td class="col-md-2"><b>谓词</b></td>
@@ -57,7 +63,6 @@ status = {
     {% endfor %}
   </tbody>
 </table>
-
 {% endblock %}
 
 {% block sidebar_content %}
@@ -85,4 +90,37 @@ status = {
   </ul>
 </div>
 
+{% endblock %}
+
+
+{% block extra_css %}
+<style>
+  svg{
+  opacity: 0;
+  border: 1px solid;
+  border-color: black;
+  }
+  .link {
+  stroke: #ccc;
+  }
+
+  .node text {
+  pointer-events: none;
+  font: 10px sans-serif;
+  }
+
+  .circle {
+  stroke: #fff;
+  stroke-width: 1.5px;
+  }
+</style>
+{% endblock %}
+
+
+{% block extra_js %}
+<script type="text/javascript">
+  var data_url = "{% url 'namedEntityLinks' nepk %}";
+</script>
+<script type="text/javascript" src="{% static 'bdbk/js/d3-3.5.6.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bdbk/js/showGraph.js' %}"></script>
 {% endblock %}

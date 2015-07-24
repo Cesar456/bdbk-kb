@@ -6,6 +6,7 @@ import zlib
 import pymongo
 from bson import objectid
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
@@ -232,6 +233,7 @@ def ShowTuplesForNamedEntity(request, nepk):
         return ','.join(cat_names)
 
     result = {
+        'nepk': nepk,
         'namedentity':{
             'ne_id': nepk,
             'ne_title': ne_object.name,
@@ -246,3 +248,129 @@ def ShowTuplesForNamedEntity(request, nepk):
     result.update(populate_db_status())
 
     return render(request, 'bdbk/ShowTuplesForNamedEntity.html', result)
+
+def namedEntityLinks(request, nepk):
+    '''
+    return value:
+    {
+      "name": "name of ne",
+
+      "tuples": [{
+        "id": 0,
+        "verb": "some verb",
+        "value": "some value",
+      }, ...],
+
+      "links": [{
+        "id": 0,
+        "name": "some link name",
+        "nepk": some pk
+        "tuple": 0
+      }]
+    }
+    '''
+    ne_object = get_object_or_404(NamedEntity, pk=nepk)
+    result = {}
+    result['name'] = ne_object.name
+
+    nodes = {}
+    links = []
+    def linkedNEOfNE(obj, obj_group):
+        if obj.pk not in nodes:
+            nodes[obj.pk] = {
+                "name": obj.name,
+                "nepk": obj.pk,
+                "group": obj_group,
+                "ne_obj": obj
+            }
+        for tuple in obj.infoboxtuple_set.all():
+            def handle_links(match):
+                schema = match.group(1)
+                link = match.group(2)
+                if schema == 'link':
+                    real_url = 'http://baike.baidu.com' + link
+                    try:
+                        ne = NamedEntity.objects.exclude(pk=obj.pk).get(bdbk_url=real_url)
+                        if ne.pk not in nodes:
+                            nodes[ne.pk] = {
+                                "name": ne.name,
+                                "nepk": ne.pk,
+                                "group": obj_group+1,
+                                "ne_obj": ne
+                            }
+
+                        links.append({
+                            "source": obj.pk,
+                            "target": ne.pk
+                        })
+                    except ObjectDoesNotExist as e:
+                        pass
+
+                return match.group(3)
+
+            print obj.pk, tuple.pk
+            re.sub(r'\{\{([a-zA-Z_]+):([^|]+)\|(.*?)\}\}', handle_links, tuple.content)
+
+            for link in tuple.infoboxtuplelink_set.all():
+                match = re.match(r'\{\{([a-zA-Z_]+):(\d+)\}\}', link.linkcontent)
+                if not match:
+                    continue
+
+                schema = match.group(1)
+                mid = match.group(2)
+                ne_obj = None
+
+                if schema == 'alias_id':
+                    try:
+                        alias = NamedEntityAlias.objects.get(pk=mid)
+                        ne_obj = alias.link_to
+                    except ObjectDoesNotExist as e:
+                        pass
+                elif schema == 'ne_id':
+                    try:
+                        ne_obj = NamedEntity.objects.get(pk=mid)
+                    except ObjectDoesNotExist as e:
+                        pass
+
+                if ne_obj:
+                    if ne_obj.pk not in nodes:
+                        nodes[ne_obj.pk] = {
+                            "name": ne_obj.name,
+                            "nepk": ne_obj.pk,
+                            "group": obj_group+1,
+                            "ne_obj": ne_obj
+                        }
+                    links.append({
+                        "source": obj.pk,
+                        "target": ne_obj.pk,
+                    })
+
+
+    linkedNEOfNE(ne_object, 5)
+    for i in nodes.values():
+        if i['ne_obj'].pk != ne_object.pk:
+            linkedNEOfNE(i['ne_obj'], 6)
+
+    # relink all nodes
+    new_nodes = []
+    new_links = []
+    new_neid_nodeid_map = {}
+    for nodeid, node in nodes.items():
+        new_nodes.append({
+            'name': node['name'],
+            'ne_pk': node['nepk'],
+            'group': node['group'],
+        })
+        new_neid_nodeid_map[nodeid] = len(new_nodes) - 1
+
+    for link in links:
+        source = new_neid_nodeid_map[link['source']]
+        target = new_neid_nodeid_map[link['target']]
+        new_links.append({
+            'source': source,
+            'target': target
+        })
+    result['nodes'] = new_nodes
+    result['links'] = new_links
+
+    return HttpResponse(json.dumps(result), content_type='text/json')
