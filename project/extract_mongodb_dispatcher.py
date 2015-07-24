@@ -33,7 +33,7 @@ if __name__  == '__main__':
 
         logging.info('worker %s started, working on doc %d-%d', worker_id, slice_from, slice_to)
 
-        subprocess.call(['/usr/bin/env', 'python', 'manage.py', 'bdbk_extract'
+        subprocess.call(['/usr/bin/env', 'python', 'manage.py', 'bdbk_extract',
                          '--src', 'mongodb',
                          '--mongod-host', args.mongod_host,
                          '--mongod-port', str(args.mongod_port),
