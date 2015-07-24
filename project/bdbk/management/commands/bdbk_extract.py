@@ -75,7 +75,7 @@ class Command(BaseCommand):
                     year, month, day = date.split('-')
                     hour, minute, second = time.split(':')
                 else:
-                    year, month, day = date.split('-')
+                    year, month, day = s.split('-')
                     hour, minute, second = 0, 0, 0
                 return timezone.make_aware(
                     datetime.datetime(
@@ -87,14 +87,14 @@ class Command(BaseCommand):
                 for item in data_set.find():
                     try:
                         data = zlib.decompress(item['content'])
-                    except zlib.error as e:
+                    except Exception as e:
                         data = item['content']
                     yield item['actualurl'], convert_date_string(item['lastmodifytime']), data
             else:
                 for item in data_set.find().skip(slice_skip).limit(slice_limit):
                     try:
                         data = zlib.decompress(item['content'])
-                    except zlib.error as e:
+                    except Exception as e:
                         data = item['content']
                     yield item['actualurl'], convert_date_string(item['lastmodifytime']), data
 
