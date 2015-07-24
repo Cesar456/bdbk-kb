@@ -118,7 +118,7 @@ class NamedEntity(models.Model):
     categories = models.ManyToManyField('Category')
 
     @staticmethod
-    def updateFromPage(url, content, last_modified):
+    def updateFromPage(url, content, last_modified, sure_new=False):
         logger = logging.getLogger('bdbk.extractor')
 
         def isAliasUrl():
@@ -152,6 +152,9 @@ class NamedEntity(models.Model):
         is_alias, real_url, from_title = isAliasUrl()
 
         try:
+            if sure_new:
+                raise ObjectDoesNotExist()
+
             ne_object = NamedEntity.objects.get(bdbk_url=real_url)
             if ne_object.last_modified > last_modified:
                 should_edit = False
@@ -174,7 +177,9 @@ class NamedEntity(models.Model):
             ne_object.bdbk_url = real_url
             ne_object.save()
 
-            ne_object.categories.clear()
+            if not sure_new:
+                ne_object.categories.clear()
+
             for cat in cats:
                 ne_object.categories.add(Category.getCategoryByName(cat))
 

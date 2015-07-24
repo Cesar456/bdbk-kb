@@ -11,7 +11,8 @@ from bdbk.page_extractor import extractor
 
 
 class Command(BaseCommand):
-    help = 'I will read baidu baike and produce you the info tuples of its infobox.'
+    help = 'I will read baidu baike and produce you the info tuples of its infobox. Be sure '
+    'to clear the database first!.'
 
     def add_arguments(self, parser):
         parser.add_argument('--src', required=True, choices=['stdin', 'page', 'mongodb'], help='HTML page source.')
@@ -63,7 +64,7 @@ class Command(BaseCommand):
                     last_time = time.time()
 
                 try:
-                    NamedEntity.updateFromPage(purl, pcontent, plmodified)
+                    NamedEntity.updateFromPage(purl, pcontent, plmodified, True)
                 except Exception as e:
                     logger.exception('exception %r: page_url(%s)', e, purl)
 
