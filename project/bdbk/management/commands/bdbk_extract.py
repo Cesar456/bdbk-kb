@@ -85,10 +85,18 @@ class Command(BaseCommand):
 
             if slice_skip == -1:
                 for item in data_set.find():
-                    yield item['actualurl'], convert_date_string(item['lastmodifytime']), zlib.decomporess(item['content'])
+                    try:
+                        data = zlib.decompress(item['content'])
+                    except zlib.error as e:
+                        data = item['content']
+                    yield item['actualurl'], convert_date_string(item['lastmodifytime']), data
             else:
                 for item in data_set.find().skip(slice_skip).limit(slice_limit):
-                    yield item['actualurl'], convert_date_string(item['lastmodifytime']), zlib.decompress(item['content'])
+                    try:
+                        data = zlib.decompress(item['content'])
+                    except zlib.error as e:
+                        data = item['content']
+                    yield item['actualurl'], convert_date_string(item['lastmodifytime']), data
 
         do_extract(iterator)
         client.close()
