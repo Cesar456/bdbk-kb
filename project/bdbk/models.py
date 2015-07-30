@@ -10,8 +10,8 @@ from .page_extractor import extractor as page_extractor
 
 
 # data migration must be performed on every schema update
-# version: 11
-DBVersion = '0.11'
+# version: 12
+DBVersion = '0.12'
 
 class BigAutoField(models.fields.AutoField):
     def db_type(self, connection):
@@ -91,7 +91,7 @@ class NamedEntityAlias(models.Model):
 
 class NamedEntity(models.Model):
     '''
-    Ver: 4
+    Ver: 5
 
     Database Schema:
     name: the name for this named entity, for names that could be mapped to
@@ -113,7 +113,7 @@ class NamedEntity(models.Model):
 
     name = models.CharField(max_length=255, db_index=True)
     search_term = models.CharField(max_length=255, db_index=True)
-    bdbk_url = models.CharField(max_length=1024)
+    bdbk_url = models.CharField(max_length=255, db_index=True)
     last_modified = models.DateTimeField(null=True, blank=True)
     categories = models.ManyToManyField('Category')
 

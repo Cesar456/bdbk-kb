@@ -10,6 +10,7 @@ from bson import objectid
 
 from project import setup_database
 from django.conf import settings
+from django.db import IntegrityError
 from django.utils import timezone
 
 from bdbk.models import NamedEntity
@@ -61,6 +62,12 @@ class BaiduSpider(scrapy.Spider):
             url = response.urljoin(link)
             regx_match = re.search(r'(http://baike\.baidu\.com/(subview|view)/.*?)(#|$)', link)
             if regx_match:
-                new_entry, created = SpiderEntry.objects.get_or_create(url=regx_match.group(1))
-                if created:
+                try:
+                    new_entry = SpiderEntry(url=regx_match.group(1))
+                    new_entry.save()
                     yield scrapy.Request(new_entry.url, callback=self.handle_page, meta={'dbo': new_entry})
+                except IntegrityError as e:
+                    if e.args[0] == 1062:
+                        pass
+                    else:
+                        raise e

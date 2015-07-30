@@ -2,12 +2,12 @@ from django.db import models
 
 
 # data migration must be performed on every schema update
-# version: 1
+# version: 2
 
 # Create your models here.
 class SpiderEntry(models.Model):
     '''
-    Ver: 1
+    Ver: 2
 
     Database Schema:
     url: url of this entry.
@@ -16,7 +16,7 @@ class SpiderEntry(models.Model):
     last_modified: last this entry was modifed(downloaded). null=<new entry>
     mongodb_id: where is this page stored in mongodb. null=<not existing>
     '''
-    url = models.CharField(max_length=512)
+    url = models.CharField(max_length=255, unique=True)
     actual_url = models.CharField(max_length=512, blank=True, null=True)
     redirect_chain = models.TextField(blank=True, null=True)
     last_modified = models.DateTimeField(blank=True, null=True, db_index=True)
