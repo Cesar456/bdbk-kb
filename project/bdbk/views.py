@@ -358,18 +358,20 @@ def namedEntityLinks(request, nepk):
     new_links = []
     new_neid_nodeid_map = {}
 
-    for link in links:
-        def addNode(pk):
-            if pk not in new_neid_nodeid_map:
-                node = nodes[pk]
-                new_nodes.append({
-                    'name': node['name'],
-                    'ne_pk': node['nepk'],
-                    'group': node['group'],
-                })
-                new_neid_nodeid_map[pk] = len(new_nodes) - 1
-            return new_neid_nodeid_map[pk]
+    def addNode(pk):
+        if pk not in new_neid_nodeid_map:
+            node = nodes[pk]
+            new_nodes.append({
+                'name': node['name'],
+                'ne_pk': node['nepk'],
+                'group': node['group'],
+            })
+            new_neid_nodeid_map[pk] = len(new_nodes) - 1
+        return new_neid_nodeid_map[pk]
 
+    addNode(ne_object.pk)
+
+    for link in links:
         source = addNode(link['source'])
         target = addNode(link['target'])
         new_links.append({
