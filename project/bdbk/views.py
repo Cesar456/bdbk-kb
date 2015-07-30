@@ -8,6 +8,7 @@ from bson import objectid
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
+from django.db import connection
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.html import escape
@@ -15,6 +16,35 @@ from django.views.decorators.http import require_http_methods
 
 from .models import InfoboxTuple, NamedEntity, Verb, DBVersion
 
+
+def random_objects(cls, count):
+    total_ne_count_approx = approx_count_objects(cls)
+    if total_ne_count_approx < 500:
+        total_ne_count = cls.objects.all().count()
+
+        random_count = min(count, total_ne_count)
+        for i in range(0, random_count):
+            random_index = random.randint(0, total_ne_count-1)
+            randomed = cls.objects.all()[random_index]
+
+            yield randomed
+    else:
+        for i in cls.objects.raw('''
+            SELECT *
+                FROM %s AS r1 JOIN
+                    (SELECT CEIL(RAND() *
+                        (SELECT MAX(id)
+                            FROM %s)) AS id)
+            AS r2
+            WHERE r1.id >= r2.id
+            ORDER BY r1.id ASC
+            LIMIT %d''' % (cls._meta.db_table, cls._meta.db_table, count)):
+            yield i
+
+def approx_count_objects(cls):
+    cursor = connection.cursor()
+    cursor.execute("SHOW TABLE STATUS WHERE NAME='%s'" % cls._meta.db_table)
+    return cursor.fetchone()[4]
 
 def resolve_content_links(content):
     # TODO: add cache
@@ -34,9 +64,12 @@ def resolve_content_links(content):
 
 def populate_db_status():
     # current data status
-    total_tuple_count = InfoboxTuple.objects.all().count()
-    total_verb_count = Verb.objects.all().count()
-    total_ne_count = NamedEntity.objects.all().count()
+    total_tuple_count = '~%d' % approx_count_objects(InfoboxTuple)
+        # InfoboxTuple.objects.all().count()
+    total_verb_count = '~%d' % approx_count_objects(Verb)
+        # Verb.objects.all().count()
+    total_ne_count = '~%d' % approx_count_objects(NamedEntity)
+        # NamedEntity.objects.all().count()
 
     return {
         'status':{
@@ -49,13 +82,9 @@ def populate_db_status():
 
 def populate_random_suggestion():
     # fetch random named entities
-    total_ne_count = NamedEntity.objects.all().count()
     random_nes = []
-    random_count = min(6, total_ne_count)
-    for i in range(0, random_count):
-        random_index = random.randint(0, total_ne_count-1)
-        randomed = NamedEntity.objects.all()[random_index]
 
+    for randomed in random_objects(NamedEntity, 6):
         random_nes.append({
             'ne_title': randomed.name,
             'ne_url': reverse('ShowTuplesForNamedEntity', args=(randomed.pk,))
@@ -208,8 +237,7 @@ def FuzzySearch(request):
 
 def ShowTuplesForNamedEntity(request, nepk):
     if nepk == 'random':
-        nepk_index = random.randint(0, NamedEntity.objects.all().count()-1)
-        random_ne = NamedEntity.objects.all()[nepk_index]
+        random_ne = random_objects(NamedEntity, 1)
         nepk = random_ne.pk
         return HttpResponseRedirect(reverse('ShowTuplesForNamedEntity', args=(nepk,)))
 
