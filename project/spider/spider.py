@@ -22,7 +22,7 @@ class BaiduSpider(scrapy.Spider):
     name = 'bdbk_spider'
 
     def start_requests(self):
-        entrys = SpiderEntry.getEntryForDownload(1)
+        entrys = SpiderEntry.getEntryForDownload(1000)
         mongodb_settings = settings.BDBK_SETTINGS['page_source_mongodb']
         self.mongodb = pymongo.MongoClient(mongodb_settings['host'], mongodb_settings['port'])
 
