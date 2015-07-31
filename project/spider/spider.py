@@ -30,6 +30,12 @@ class BaiduSpider(scrapy.Spider):
             yield scrapy.Request(entry.url, callback=self.handle_page, meta={'dbo': entry})
 
     def handle_page(self, response):
+        reqs = len(self.crawler.engine.slot.scheduler) + len(self.crawler.engine.slot.inprogress)
+        if reqs <= 1:
+            entrys = SpiderEntry.getEntryForDownload(100)
+            for entry in entrys:
+                yield scrapy.Request(entry.url, callback=self.handle_page, meta={'dbo': entry})
+
         if not response.xpath('//input[@id="query"]'):
             yield response.request
 
