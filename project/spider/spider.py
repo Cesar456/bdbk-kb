@@ -70,7 +70,7 @@ class BaiduSpider(scrapy.Spider):
 
         for link in response.xpath('//a/@href').extract():
             url = response.urljoin(link)
-            regx_match = re.search(r'(http://baike\.baidu\.com/(subview|view)/.*?)(#|$)', link)
+            regx_match = re.search(r'(http://baike\.baidu\.com/(subview|view)/.*?)(#|$)', url)
             if regx_match:
                 try:
                     new_entry = SpiderEntry(url=regx_match.group(1))
