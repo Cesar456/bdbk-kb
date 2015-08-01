@@ -27,14 +27,14 @@ class BaiduSpider(scrapy.Spider):
         self.mongodb = pymongo.MongoClient(mongodb_settings['host'], mongodb_settings['port'])
 
         for entry in entrys:
-            yield scrapy.Request(entry.url, callback=self.handle_page, meta={'dbo': entry})
+            yield scrapy.Request(entry.url, dont_filter=True, callback=self.handle_page, meta={'dbo': entry})
 
     def handle_page(self, response):
         reqs = len(self.crawler.engine.slot.scheduler) + len(self.crawler.engine.slot.inprogress)
         if reqs <= 1:
             entrys = SpiderEntry.getEntryForDownload(100)
             for entry in entrys:
-                yield scrapy.Request(entry.url, callback=self.handle_page, meta={'dbo': entry})
+                yield scrapy.Request(entry.url, dont_filter=True, callback=self.handle_page, meta={'dbo': entry})
 
         logger = logging.getLogger('spider.handler')
         entry = response.request.meta['dbo']
@@ -75,7 +75,7 @@ class BaiduSpider(scrapy.Spider):
                 try:
                     new_entry = SpiderEntry(url=regx_match.group(1))
                     new_entry.save()
-                    yield scrapy.Request(new_entry.url, callback=self.handle_page, meta={'dbo': new_entry})
+                    yield scrapy.Request(new_entry.url, dont_filter=True, callback=self.handle_page, meta={'dbo': new_entry})
                 except IntegrityError as e:
                     if e.args[0] == 1062:
                         pass
