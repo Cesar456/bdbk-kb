@@ -40,7 +40,7 @@ class BaiduSpider(scrapy.Spider):
         entry = response.request.meta['dbo']
 
         # remove error pages
-        if 'error.html' in response.url and entry.actualurl is None:
+        if 'error.html' in response.url and entry.actual_url is None:
             logger.info('dropping SpiderEntry: %s', entry.url)
             entry.delete()
             return
