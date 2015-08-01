@@ -36,11 +36,15 @@ class BaiduSpider(scrapy.Spider):
             for entry in entrys:
                 yield scrapy.Request(entry.url, callback=self.handle_page, meta={'dbo': entry})
 
-        if not response.xpath('//input[@id="query"]'):
-            yield response.request
-
         logger = logging.getLogger('spider.handler')
         entry = response.request.meta['dbo']
+
+        # remove error pages
+        if 'error.html' in response.url and entry.actualurl is None:
+            logger.info('dropping SpiderEntry: %s', entry.url)
+            entry.delete()
+            return
+
         if entry.mongodb_id:
             self.mongodb.baidu.data.delete_one({'_id': objectid.ObjectId(entry.mongodb_id)})
 
