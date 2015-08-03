@@ -10,8 +10,8 @@ from .page_extractor import extractor as page_extractor
 
 
 # data migration must be performed on every schema update
-# version: 12
-DBVersion = '0.12'
+# version: 13
+DBVersion = '0.13'
 
 class BigAutoField(models.fields.AutoField):
     def db_type(self, connection):
@@ -224,7 +224,7 @@ class InfoboxTuple(models.Model):
 
 class InfoboxTupleLink(models.Model):
     '''
-    Ver: 1
+    Ver: 2
 
     Database Schema:
 
@@ -237,5 +237,5 @@ class InfoboxTupleLink(models.Model):
     id = BigAutoField(primary_key=True)
     start = models.IntegerField()
     end = models.IntegerField()
-    infoboxtuple = BigForeignKey('InfoboxTuple')
+    infoboxtuple = BigForeignKey('InfoboxTuple', db_index=True)
     linkcontent = models.CharField(max_length=255)
