@@ -46,74 +46,93 @@ class PunctuationSplitLinkBuilder(LinkBuilder):
     def find_links(self, *args, **kwargs):
         for tuple in self.infobox_iterator():
             existing_links, content = self.strip_links(tuple.content)
-            new_links = []
+
+            links_by_pos = {}
             for meaningful, start, end in split_unicode_by_punctuation(content):
+                if meaningful == tuple.named_entity.search_term or\
+                   meaningful == tuple.named_entity.name:
+                    # never link to self
+                    continue
+
+                key = (start,end)
+                value = None
                 for obj, is_ne_or_alias in self.resolve_name(meaningful):
-                    new_links.append({
-                        'start': start,
-                        'end': end,
-                        'link_type': 'ne_id' if is_ne_or_alias else 'alias_id',
-                        'link_to': obj
-                    })
+                    if not value:
+                        value = []
+                        links_by_pos[key] = value
 
-            self.find_links_with_same_category(tuple, new_links)
+                    d = {}
+                    if is_ne_or_alias:
+                        d['link_type'] = 'ne_id'
+                        d['link_to'] = obj
+                        d['cats'] = [x.name for x in obj.categories.all()]
+                    else:
+                        d['link_type'] = 'alias_id'
+                        d['link_to'] = obj
+                        d['cats'] = [x.name for x in obj.link_to.categories.all()]
+                    value.append(d)
 
-    def find_links_with_same_category(self, tuple, new_links):
-        # find common cat
-        if len(new_links) < 2:
+            new_links = self.find_links_with_same_category(links_by_pos)
+            if new_links:
+                print '=' * 40
+                print tuple.named_entity.name, tuple.verb.name, tuple.content
+                for k, v in new_links.items():
+                    if v['link_type'] == 'ne_id':
+                        print k, v['link_to'].name,
+                    else:
+                        print k, v['link_to'].link_from,
+                print ''
+
+    def find_links_with_same_category(self, links_by_pos):
+        # too few, can't be sure
+        if len(links_by_pos) < 2:
             return
 
-        cats = None
-        ne_looked_up = []
-        def drop_redundant_ne(ne):
-            '''
-            Drop nes that are very same.
-            '''
-            url = ne.bdbk_url
-            match = re.search(r'http://baike.baidu.com/view/(\d+).htm|http://baike.baidu.com/subview/(\d+)/(\d+.htm)', url)
-            if not match:
-                return True
+        matched_idx = []
+        idx = [-1] * len(links_by_pos)
+        cmn_cats = [None]
 
-            view_id, subview_major_id, subview_minor_id = match.groups()
-            if view_id is not None:
-                if (view_id, view_id) not in ne_looked_up:
-                    ne_looked_up.append((view_id, view_id))
-                    return False
-            if subview_major_id is not None and subview_minor_id is not None:
-                t = (subview_major_id, subview_minor_id)
-                if t not in ne_looked_up:
-                    ne_looked_up.append(t)
-                    return False
+        def _iterator(depth, keys):
+            pos_link = links_by_pos[keys[depth]]
 
-            return True
+            for i in range(len(pos_link)):
+                idx[depth] = i
 
-        for link in new_links:
-            if link['link_type'] == 'ne_id':
-                ne = link['link_to']
-            else:
-                ne = link['link_to'].link_to
-
-            if drop_redundant_ne(ne):
-                continue
-
-            this_cats = set([x.name for x in ne.categories.all()])
-            if cats is None:
-                cats = this_cats
-            else:
-                cats = cats & this_cats
-
-            if not cats:
-                break
-
-        if cats:
-            print '=' * 20
-            print 'Found new links for tuple (%s,%s,%s)' % (tuple.named_entity.name, tuple.verb.name, tuple.content)
-            print 'common categories: ', ','.join(cats)
-            print 'new_links:'
-            for link in new_links:
-                print 'link type:', link['link_type'],
-                if link['link_type'] == 'ne_id':
-                    print ', link to:', link['link_to'].name
+                if depth==0:
+                    cmn_cats[0] = set(pos_link[i]['cats'])
+                    _iterator(depth+1, keys)
                 else:
-                    print ', link to:', link['link_to'].link_to.name
-            print '=' * 20
+                    cmn_cats_old = cmn_cats[0]
+                    cmn_cats_ = cmn_cats_old & set(pos_link[i]['cats'])
+                    if not cmn_cats_:
+                        continue
+
+                    if depth==len(keys)-1:
+                        if len(cmn_cats_):
+                            matched_idx.append(
+                                (len(cmn_cats_), list(idx))
+                            )
+                    else:
+                        cmn_cats[0] = cmn_cats_
+                        _iterator(depth+1, keys)
+                        cmn_cats[0] = cmn_cats_old
+
+        keys = links_by_pos.keys()
+        _iterator(0, keys)
+
+        if not matched_idx:
+            return None
+
+        matched_idx = sorted(matched_idx, key=lambda x: x[0], reverse=True)
+        idx = matched_idx[0][1]
+        result = {}
+        for i in range(len(idx)):
+            key = keys[i]
+            lst = links_by_pos[keys[i]]
+            link = lst[idx[i]]
+            result[key] = {
+                'link_type': link['link_type'],
+                'link_to': link['link_to'],
+            }
+
+        return result

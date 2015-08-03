@@ -13,6 +13,10 @@ class LinkBuilder(object):
 
     __init__(self):
 
+    resolve_url(self, url):
+        resolve a url to named entity.
+        returns: the ne, or None
+
     resolve_name(self, name):
         resolve a name to named entities.
         returns: (obj, TF_obj_is_ne_else_alias)
@@ -31,6 +35,14 @@ class LinkBuilder(object):
     strip_links(self, content):
         strip all links in string.
     '''
+    def resolve_url(self, url):
+        if 'http' not in url:
+            url = 'http://baike.baidu.com' + url
+        try:
+            return NamedEntity.objects.get(bdbk_url=url)
+        except ObjectDoesNotExist:
+            return None
+
     def resolve_name(self, name):
         try:
             search_alias = NamedEntityAlias.objects.get(link_from=name)
