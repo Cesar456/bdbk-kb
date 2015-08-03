@@ -22,10 +22,13 @@ std::vector<T> readFromString(const std::string& str){
   std::vector<T> result;
   std::stringstream stream(str);
 
-  while(!stream.fail()){
+  while(true){
     T v;
     stream >> v;
-    result.push_back(v);
+    if(!stream.fail())
+      result.push_back(v);
+    else
+      break;
   }
 
   return result;
@@ -121,6 +124,9 @@ void iterate(std::map<int, TreeNodeStorage>& storage, std::vector<int>& roots){
 
       node.visited = iter;
 
+      for(size_t i=0;i<node.outlinks.size();++i)
+        tovisit.push(node.outlinks[i]);
+
       for(size_t i=0;i<roots.size();++i) values[i] = 0.0f;
 
       for(size_t i=0;i<node.inlinks.size();++i){
@@ -135,14 +141,14 @@ void iterate(std::map<int, TreeNodeStorage>& storage, std::vector<int>& roots){
       }
       norm = std::sqrt(norm);
 
+      if(norm<0.0000001)
+        continue;
+
       for(size_t i=0;i<roots.size();++i){
         float v = values[i] / norm;
         accumulate += std::abs(v - node.values[i]);
         node.values[i] = v;
       }
-
-      for(size_t i=0;i<node.outlinks.size();++i)
-        tovisit.push(node.outlinks[i]);
     }
 
     std::cerr<<"Iter "<<iter<<", accumulate "<<accumulate<<std::endl;
@@ -212,7 +218,7 @@ int main(int, char**){
 
   for(auto i=tree.begin();i!=tree.end();++i){
     std::cout<<i->first<<' ';
-    for(size_t j=0;j<roots.size();++j)
+    for(size_t j=0;j<i->second.values.size();++j)
       std::cout<<i->second.values[j]<<' ';
     std::cout<<std::endl;
   }
