@@ -33,7 +33,7 @@ std::vector<T> readFromString(const std::string& str){
 
   return result;
 }
-void inLinkToTree(std::map<int, TreeNodeStorage>& storage, std::vector<int>& roots){
+void inLinkToTree(std::map<int, TreeNodeStorage>& storage, std::vector<int>& roots, size_t& ndim){
   std::vector<int> noinlinks;
   // build all nodes
   for(auto i=storage.begin();i!=storage.end();++i){
@@ -52,7 +52,7 @@ void inLinkToTree(std::map<int, TreeNodeStorage>& storage, std::vector<int>& roo
     "nodeId value0 value1 ..."<<std::endl<<
     "end them using a blank line (CR)"<<std::endl;
 
-  size_t ndim = 0;
+  ndim = 0;
   while(true){
     std::string tmp;
     std::getline(std::cin, tmp);
@@ -92,7 +92,7 @@ void inLinkToTree(std::map<int, TreeNodeStorage>& storage, std::vector<int>& roo
   }
 }
 
-void iterate(std::map<int, TreeNodeStorage>& storage, std::vector<int>& roots){
+void iterate(std::map<int, TreeNodeStorage>& storage, std::vector<int>& roots, size_t& ndim){
   float accumulate;
 
   for(auto i=storage.begin();i!=storage.end();++i){
@@ -101,7 +101,7 @@ void iterate(std::map<int, TreeNodeStorage>& storage, std::vector<int>& roots){
 
   int iter = 0;
   std::stack<int> tovisit;
-  float* values = new float[roots.size()];
+  float* values = new float[ndim];
 
   while(true){
     accumulate = 0.0f;
@@ -127,16 +127,16 @@ void iterate(std::map<int, TreeNodeStorage>& storage, std::vector<int>& roots){
       for(size_t i=0;i<node.outlinks.size();++i)
         tovisit.push(node.outlinks[i]);
 
-      for(size_t i=0;i<roots.size();++i) values[i] = 0.0f;
+      for(size_t i=0;i<ndim;++i) values[i] = 0.0f;
 
       for(size_t i=0;i<node.inlinks.size();++i){
         TreeNodeStorage& inlink = storage[node.inlinks[i]];
-        for(size_t j=0;j<roots.size();++j)
+        for(size_t j=0;j<ndim;++j)
           values[j] += inlink.values[j];
       }
 
       float norm = 0.0f;
-      for(size_t i=0;i<roots.size();++i){
+      for(size_t i=0;i<ndim;++i){
         norm += values[i]*values[i];
       }
       norm = std::sqrt(norm);
@@ -144,7 +144,7 @@ void iterate(std::map<int, TreeNodeStorage>& storage, std::vector<int>& roots){
       if(norm<0.0000001)
         continue;
 
-      for(size_t i=0;i<roots.size();++i){
+      for(size_t i=0;i<ndim;++i){
         float v = values[i] / norm;
         accumulate += std::abs(v - node.values[i]);
         node.values[i] = v;
@@ -206,15 +206,16 @@ std::map<int, TreeNodeStorage> readInLink(){
 int main(int, char**){
   std::map<int, TreeNodeStorage> tree = readInLink();
   std::vector<int> roots;
+  size_t ndim;
 
-  inLinkToTree(tree, roots);
+  inLinkToTree(tree, roots, ndim);
 
   std::cout<<"roots: ";
   for(size_t i=0;i<roots.size();++i)
     std::cout<<roots[i]<<' ';
   std::cout<<std::endl;
 
-  iterate(tree, roots);
+  iterate(tree, roots, ndim);
 
   for(auto i=tree.begin();i!=tree.end();++i){
     std::cout<<i->first<<' ';
