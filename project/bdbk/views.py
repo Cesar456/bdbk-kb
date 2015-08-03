@@ -14,7 +14,7 @@ from django.shortcuts import get_object_or_404, render
 from django.utils.html import escape
 from django.views.decorators.http import require_http_methods
 
-from .models import InfoboxTuple, NamedEntity, Verb, DBVersion
+from .models import InfoboxTuple, NamedEntity, NamedEntityAlias, Verb, DBVersion, InfoboxTupleLink
 
 
 def random_objects(cls, count):
@@ -46,21 +46,77 @@ def approx_count_objects(cls):
     cursor.execute("SHOW TABLE STATUS WHERE NAME='%s'" % cls._meta.db_table)
     return cursor.fetchone()[4]
 
-def resolve_content_links(content):
+def resolve_content_links(content, infoboxlinks=[]):
     # TODO: add cache
     content = escape(content)
 
-    def replaced_content(mch):
-        linked_url_real = 'http://baike.baidu.com' + mch.group(1)
-        linked_ne = NamedEntity.objects.filter(bdbk_url=linked_url_real)
-        # TODO: how to map the linked named entity more properly
-        if len(linked_ne):
-            linked_ne_url = reverse('ShowTuplesForNamedEntity', args=(linked_ne[0].pk,))
-            return '<a href="%s">%s</a>' % (linked_ne_url, mch.group(2))
-        else:
-            return mch.group(2)
 
-    return re.sub(r'\{\{link:([^|]+)\|(.*?)\}\}', replaced_content, content)
+    def strip_obvious_links(content):
+        '''
+        strip all links in a string, return the links list and the stripped string.
+        e.g.:
+        "This is a {{link:/url.htm|test}}"
+        ==>
+        [{'start':10, 'end': 14, 'link_type': 'link', 'link_to': 'url.htm'}], "This is a test"
+        '''
+        links = {}
+        stripped_len = [0]
+        def _strip(regx_match):
+            value_len = len(regx_match.group(3))
+            match_len = regx_match.end() - regx_match.start()
+            this_stripped_len = match_len - value_len
+            url_real = 'http://baike.baidu.com' + regx_match.group(2)
+            linked_ne = NamedEntity.objects.filter(bdbk_url=url_real)
+            if linked_ne:
+                start = regx_match.start()-stripped_len[0]
+                end = regx_match.end()-stripped_len[0]-this_stripped_len
+                links[(start,end)] = reverse('ShowTuplesForNamedEntity', args=(linked_ne[0].pk,))
+
+            stripped_len[0] += this_stripped_len
+            return regx_match.group(3)
+
+        return links, re.sub(r'\{\{([a-zA-Z_]+):([^|]+)\|([^}]+)\}\}', _strip, content)
+
+    links, content = strip_obvious_links(content)
+
+    for i in infoboxlinks:
+        mch = re.match(r'\{\{([a-zA-Z_]+):([^|]+)\}\}', i.linkcontent)
+        if not mch: continue
+
+        if mch.group(1) == 'alias_id':
+            try:
+                target = NamedEntityAlias.objects.get(pk=mch.group(2)).link_to
+            except ObjectDoesNotExist as e:
+                target = None
+        elif mch.group(1) == 'ne_id':
+            try:
+                target = NamedEntity.objects.get(pk=mch.group(2))
+            except ObjectDoesNotExist as e:
+                target = None
+        else:
+            target = None
+
+        if target and (i.start, i.end) not in links:
+            links[(i.start, i.end)] = reverse('ShowTuplesForNamedEntity', args=(target.pk,))
+
+    links_keys = sorted(links.keys())
+    splits = [] # string builder
+    start = 0 # current start pos of content[0]
+    for s,e in links_keys:
+        if s<start: continue
+
+        if s!=start:
+            splits.append(content[:s-start])
+            content = content[s-start:]
+            start += s-start
+
+        part = content[:e-s]
+        content = content[e-s:]
+        start += e-s
+        splits.append('<a href="%s">%s</a>' % (links[(s,e)], part))
+    splits.append(content)
+
+    return ''.join(splits)
 
 def populate_db_status():
     # current data status
@@ -175,7 +231,7 @@ def AdvancedSearch(request):
                     'namedentity': i.named_entity.name,
                     'namedentity_url': reverse('ShowTuplesForNamedEntity', args=(i.named_entity.id,)),
                     'verb': i.verb.name,
-                    'content': resolve_content_links(i.content)
+                    'content': resolve_content_links(i.content, list(i.infoboxtuplelink_set.all()))
                 })
 
             context = {
@@ -225,7 +281,7 @@ def FuzzySearch(request):
             'ne_name': obj.named_entity.name,
             'ne_url': reverse('ShowTuplesForNamedEntity', args=(obj.named_entity.pk,)),
             'verb': obj.verb.name,
-            'content': resolve_content_links(obj.content),
+            'content': resolve_content_links(obj.content, list(obj.infoboxtuplelink_set.all())),
         })
 
     result = {
@@ -250,7 +306,7 @@ def ShowTuplesForNamedEntity(request, nepk):
     for infoboxtuple in ne_object.infoboxtuple_set.all():
         tuples.append({
             'verb': infoboxtuple.verb.name,
-            'content': resolve_content_links(infoboxtuple.content),
+            'content': resolve_content_links(infoboxtuple.content, list(infoboxtuple.infoboxtuplelink_set.all())),
         })
 
     def getCatString(ne_object):

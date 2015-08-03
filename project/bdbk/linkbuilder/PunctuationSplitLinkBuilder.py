@@ -2,6 +2,8 @@
 import re
 import unicodedata
 
+from bdbk.models import InfoboxTupleLink
+
 from .LinkBuilder import LinkBuilder
 
 
@@ -74,9 +76,16 @@ class PunctuationSplitLinkBuilder(LinkBuilder):
 
             new_links = self.find_links_with_same_category(links_by_pos)
             if new_links:
+                tuple.infoboxtuplelink_set.all().delete()
                 print '=' * 40
                 print tuple.named_entity.name, tuple.verb.name, tuple.content
                 for k, v in new_links.items():
+                    InfoboxTupleLink(start=k[0],
+                                     end=k[1],
+                                     infoboxtuple=tuple,
+                                     linkcontent='{{%s:%d}}' % (v['link_type'], v['link_to'].pk)
+                    ).save()
+
                     if v['link_type'] == 'ne_id':
                         print k, v['link_to'].name,
                     else:
