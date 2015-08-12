@@ -57,11 +57,20 @@ d3.json(data_url, function(error, json){
     .attr("width", 16)
     .attr("height", 16);
 
-  node.append("a")
-    .append("text")
+  node.append("text")
     .attr("dx", 7)
     .attr("dy", ".35em")
-    .text(function(d) { return d.name; });
+    .style("cursor", "pointer")
+    .text(function(d) { return d.name; })
+    .on('click', function(d){
+      window.location.href = '../' + d.ne_pk + '/';
+    })
+    .on('mouseover', function(){
+      d3.select(this).style("fill", "red");
+    })
+    .on('mouseout', function(){
+      d3.select(this).style('fill', null);
+    });
 
   svg.style("opacity", 1e-6)
     .transition()

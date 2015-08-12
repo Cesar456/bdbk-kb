@@ -96,22 +96,27 @@ status = {
 {% block extra_css %}
 <style>
   svg{
-  opacity: 0;
-  border: 1px solid;
-  border-color: black;
+    opacity: 0;
+    border: 1px solid;
+    border-color: black;
   }
   .link {
-  stroke: #ccc;
+      stroke: #ccc;
   }
 
   .node text {
-  pointer-events: none;
-  font: 10px sans-serif;
+//      pointer-events: none;
+      font: 10px sans-serif;
   }
 
   .circle {
-  stroke: #fff;
-  stroke-width: 1.5px;
+      stroke: #fff;
+      stroke-width: 1.5px;
+  }
+
+  .node text{
+      font: 10px sans-serif;
+      cursor: pointer;
   }
 </style>
 {% endblock %}
