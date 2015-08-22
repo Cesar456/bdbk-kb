@@ -53,4 +53,5 @@ project文件夹内是一个对百度百科页面的（三元组数据、标签�
 - ```./manage.py bdbk_extract```：从页面内抽取数据，如果```--src```选项是```stdin```或者```page```，则直接打印输出而不存入数据库；若```--src```选项是```mongodb```，就从数据库（MongoDB）中抽取页面并存入数据库，用于页面已经爬取好的情况，此时可以指定MongoDB的地址：```--mongod-host```、```--mongod-port```，以及用于多线程处理时，可以指定页面下标的上（闭）下（开）界：```--mongod-from-to```。
 - ```./extract_mongodb_dispatcher.py```：批量抽取MongoDB中的页面，可以指定MongoDB的地址：```--mongod-host```、```--mongod-port```，和多线程处理的线程数量```--worker-count```，每个线程处理的页面数量```--worker-job-count```。
 - ```./manage.py spider_getproxy```：刷新代理服务器地址列表。输出的代理服务器列表可以直接存为列表文件供```./manage.py spider_start```使用。（但通常代理服务器会使速度更慢）
-- ```-./manage.py bdbk_discover_links```：分析三元组数据，发现新的实体间的链接。TODO。
+- ```./manage.py bdbk_discover_links```：分析三元组数据，发现新的实体间的链接。TODO。
+- ```./manage.py bdbk_make_corpus```： 整理爬取的页面文本，输出corpus供[word2vec](https://code.google.com/p/word2vec/)计算词向量使用。
