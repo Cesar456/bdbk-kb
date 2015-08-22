@@ -16,11 +16,14 @@ project文件夹内是一个对百度百科页面的（三元组数据、标签�
 - pytz(2013.7)
 - Scrapy(1.0.1)
 - threadpool(1.2.7)
+- jieba(0.36.1)
 
 在Ubuntu上，安装上述python包之前需要执行
 ```apt-get install python-dev libffi-dev libssl-dev libxml2-dev libxslt1-dev```
 确保相关的库已经安装。
 
+在Mac OS X上，使用Homebrew执行
+```brew install libxml2 libxslt libffi openssl```
 
 
 ###初始化数据
