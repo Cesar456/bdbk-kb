@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import subprocess
+
 from bdbk.models import NamedEntity, NamedEntityAlias
 
 from .LinkBuilder import LinkBuilder

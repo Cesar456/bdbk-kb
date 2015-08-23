@@ -79,30 +79,8 @@ public:
 
 };
 
-int main(){
-  InversedDict dict;
-
+void handleContinuousMode(InversedDict& dict){
   std::wstring line;
-  while(true){
-    std::getline(std::wcin, line);
-    if(!line.size()){
-      std::cerr<<"all key-value pairs are read."<<std::endl;
-      break;
-    }
-
-    size_t pos = line.find(L'\t');
-    if(pos == std::wstring::npos){
-      std::cerr<<"No tab char found in input"<<std::endl;
-      return -1;
-    }
-
-    std::wstring
-      key(line, 0, pos),
-      value(line, pos+1);
-
-    dict.set(key, value);
-  }
-
   while(true){
     std::getline(std::wcin, line);
     if(!line.size()){
@@ -134,6 +112,64 @@ int main(){
       nolink_part.clear();
     }
     std::wcout<<std::endl;
+  }
+}
+
+void handleHitMode(InversedDict& dict){
+  std::wstring line;
+  while(true){
+    std::getline(std::wcin, line);
+    if(!line.size()){
+      std::cerr<<"null string received, exiting."<<std::endl;
+      break;
+    }
+
+    std::wstring* output_str;
+    std::wstring nolink_part;
+
+    for(size_t pos=0;pos<line.size();pos++){
+      size_t output_pos = pos;
+
+      dict.match(line, pos, &output_str, &output_pos);
+      if(output_str!=NULL){
+        std::wcout<<line.substr(pos, output_pos-pos)<<'\t'<<*output_str<<std::endl;
+      }
+    }
+    std::wcout<<std::endl;
+  }
+}
+int main(int argc, char** argv){
+  InversedDict dict;
+
+  std::wstring line;
+  while(true){
+    std::getline(std::wcin, line);
+    if(!line.size()){
+      std::cerr<<"all key-value pairs are read."<<std::endl;
+      break;
+    }
+
+    size_t pos = line.find(L'\t');
+    if(pos == std::wstring::npos){
+      std::cerr<<"No tab char found in input"<<std::endl;
+      return -1;
+    }
+
+    std::wstring
+      key(line, 0, pos),
+      value(line, pos+1);
+
+    dict.set(key, value);
+  }
+
+  if(argc == 1){
+    handleContinuousMode(dict);
+  }else if(argc == 2 && strcmp(argv[1], "-hit")==0){
+    handleHitMode(dict);
+  }else{
+    std::cerr<<"-hit: hit mode, will print every tokens in dictionary"<<std::endl;
+    std::cerr<<"or will run in normal mode, input will be split into tokens"<<std::endl;
+    return 1;
   }
 
   std::cerr<<"really exiting..."<<std::endl;
