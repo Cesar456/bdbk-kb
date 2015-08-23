@@ -1,0 +1,82 @@
+{% extends 'bdbk/BasePage.html' %}
+{% load static %}
+
+{% comment 'context dicts' %}
+randomnes = {
+[{'ne_title': '...', 'ne_url': '...'}]
+}
+
+status = {
+'ne_count': integer,
+'infoboxtuple_count': integer,
+'verb_count': integer
+}
+{% endcomment %}
+
+
+<!-- template content starts -->
+{% block page_title %}QA{% endblock %}
+{% block page_brand %}Infobox Viewer{% endblock %}
+{% block page_brand_href %}{% url 'ShowTuplesForNamedEntity' 'random' %}{% endblock %}
+
+{% block container %}
+<div class="row">
+  <div class="col-md-8 col-md-offset-2 text-center">
+    <h4>输入你的问题</h4>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    <div class="input-group search-block">
+      <input type="text" name="query" class="form-control" id="question">
+      <span class="input-group-btn">
+        <button class="btn btn-default" type="button" id="ask">
+          <span class="glyphicon glyphicon-search"></span>
+        </button>
+      </span>
+    </div>
+  </div>
+</div>
+<div id="result" style="display:none">
+  <div class="row" style="display:none">
+    <div class="col-md-8 col-md-offset-2">
+      <h4>分词结果：</h4>
+      <p id="result-words"></p>
+    </div>
+  </div>
+  <div class="row" id="best-result-row">
+    <div class="col-md-8 col-md-offset-2">
+      <h4>最佳结果：</h4>
+      <p id="best-result"></p>
+    </div>
+  </div>
+  <div class="row" id="other-results-row">
+    <div class="col-md-8 col-md-offset-2">
+      <h4>其他结果：</h4>
+      <ul id="other-results">
+      </ul>
+    </div>
+  </div>
+  <div class="row" id="no-result">
+    <div class="col-md-8 col-md-offset-2">
+      <h4>抱歉，未能找到结果。</h4>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  body{
+  padding-top: 135px;
+  }
+
+  #result{
+  padding-top: 30px;
+  }
+</style>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'bdbk/js/qa.js' %}"></script>
+{% endblock %}

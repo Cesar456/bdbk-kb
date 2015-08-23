@@ -1,3 +1,4 @@
+import jieba
 import json
 import random
 import re
@@ -10,12 +11,14 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db import connection
 from django.db.models import Q
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import (Http404, HttpResponse, HttpResponseRedirect,
+                         HttpResponseBadRequest)
 from django.shortcuts import get_object_or_404, render
 from django.utils.html import escape
 from django.views.decorators.http import require_http_methods
 
-from .models import InfoboxTuple, NamedEntity, NamedEntityAlias, Verb, DBVersion, InfoboxTupleLink
+from .models import (DBVersion, InfoboxTuple, InfoboxTupleLink, NamedEntity,
+                     NamedEntityAlias, Verb)
 
 
 def random_objects(cls, count):
@@ -46,6 +49,9 @@ def approx_count_objects(cls):
     cursor = connection.cursor()
     cursor.execute("SHOW TABLE STATUS WHERE NAME='%s'" % cls._meta.db_table)
     return cursor.fetchone()[4]
+
+def strip_content_links(content):
+    return re.sub(r'\{\{([a-zA-Z_]+):([^|]+)\|([^}]+)\}\}', lambda x:x.group(3), content)
 
 def resolve_content_links(content, infoboxlinks=[]):
     # TODO: add cache
@@ -479,3 +485,92 @@ def namedEntityLinks(request, nepk):
     result['links'] = new_links
 
     return HttpResponse(json.dumps(result), content_type='text/json')
+
+def qaQueryAPI(request):
+    text = request.POST.get('text', None)
+
+    if text is None:
+        raise HttpResponseBadRequest()
+
+    words = list(jieba.cut(text, cut_all=False))
+
+    ne_result = []
+
+    def search_ne():
+        for i in range(len(words)):
+            for j in range(i+1, len(words)):
+                s = ''.join(words[i:j])
+                for o in NamedEntity.objects.filter(name__iexact=s):
+                    ne_result.append({
+                        'pos': (i,j),
+                        'type': 'ne',
+                        'display': o.name,
+                        'o': o
+                    })
+                for o in NamedEntity.objects.filter(~Q(name__iexact=s),
+                                                    Q(search_term__iexact=s)):
+                    ne_result.append({
+                        'pos': (i,j),
+                        'type': 'ne_search_term',
+                        'display': o.search_term,
+                        'o': o
+                    })
+                for o in NamedEntityAlias.objects.filter(link_from__iexact=s):
+                    ne_result.append({
+                        'pos': (i,j),
+                        'type': 'alias',
+                        'display': o.link_from,
+                        'o': o
+                    })
+
+    verb_result = []
+    def search_verb():
+        for i in range(len(words)):
+            for j in range(i+1, len(words)):
+                s = ''.join(words[i:j])
+                try:
+                    o = Verb.objects.get(name__iexact=s)
+                    verb_result.append({
+                        'pos': (i,j),
+                        'display': o.name,
+                        'o': o
+                    })
+                except ObjectDoesNotExist as e:
+                    pass
+
+    search_ne()
+    search_verb()
+
+    result = {
+        'tokenize': words,
+        'result': []
+    }
+
+    for i in ne_result:
+        for j in verb_result:
+            if i['pos'][1] > j['pos'][0]:
+                continue
+
+            ne_obj = i['o'] if i['type'] != 'alias' else i['o'].link_to
+            verb_obj = j['o']
+
+            infobox = InfoboxTuple.objects.filter(named_entity=ne_obj.pk,
+                                                  verb=verb_obj.pk)
+            if len(infobox):
+                result['result'].append({
+                    'ne_title': ne_obj.name,
+                    'ne_display': i['display'],
+                    'is_alias': i['type'] == 'alias',
+                    'verb': verb_obj.name,
+                    'ne_id': ne_obj.pk,
+                    'content': strip_content_links(infobox[0].content)
+                })
+
+    result['result'] = sorted(result['result'],
+                              key=lambda x:len(x['ne_display']),
+                              reverse=True)
+
+    return HttpResponse(json.dumps(result), content_type='text/json')
+
+def QA(request):
+    return render(request, 'bdbk/QA.html', {})

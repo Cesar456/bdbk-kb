@@ -5,6 +5,7 @@ urlpatterns = patterns('bdbk.views',
     url(r'^$', RedirectView.as_view(url='showTuplesForNamedEntity/random/', permanent=False)),
     url(r'^showTuplesForNamedEntity/(?P<nepk>\d+|random)/$', 'ShowTuplesForNamedEntity', name='ShowTuplesForNamedEntity'),
     url(r'^fuzzySearch/$', 'FuzzySearch', name='FuzzySearch'),
+    url(r'^qa/$', 'QA', name='QA'),
     url(r'^status/namedEntity/(?P<filter_string>[^/]+)/$', 'Status_NamedEntity', name='Status_NamedEntity'),
     url(r'^status/namedEntity/$', 'Status_NamedEntity', name='Status_NamedEntity'),
     url(r'^status/verb/$', 'Status_Verb', name='Status_Verb'),
@@ -15,4 +16,5 @@ urlpatterns = patterns('bdbk.views',
 
     # json API
     url(r'^graph/namedEntityLinks/(?P<nepk>\d+)/$', 'namedEntityLinks', name='namedEntityLinks'),
+    url(r'^qa/query/$', 'qaQueryAPI', name='qaQueryAPI'),
 )

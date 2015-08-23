@@ -4,5 +4,4 @@ from django.views.generic.base import RedirectView
 urlpatterns = [
     url(r'^$', RedirectView.as_view(url='bdbk/', permanent=False)),
     url(r'^bdbk/', include('bdbk.urls')),
-    url(r'^ui/', include('ui.urls')),
 ]
