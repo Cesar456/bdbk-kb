@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.db import connection
+from django.db.models import Q
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.html import escape
@@ -202,19 +203,31 @@ def AdvancedSearch(request):
                 field + '__' + a: qstr
             }
 
-        qdict = {}
+        qdict = []
         friendly_name = []
         if ne_str:
             friendly_name_1, qdict_1 = action_to_query_dict('named_entity__name', 'Name of entity', ne_action, ne_str)
-            qdict.update(qdict_1)
+            q = Q(**qdict_1)
             friendly_name.append(friendly_name_1)
+
+            friendly_name_1, qdict_1 = action_to_query_dict('named_entity__search_term', 'Search term of entity', ne_action, ne_str)
+            q |= Q(**qdict_1)
+            friendly_name.append(friendly_name_1)
+
+            friendly_name_alias, qdict_alias = action_to_query_dict('link_from', 'Name alias', ne_action, ne_str)
+            friendly_name.append(friendly_name_alias)
+            alias_result = NamedEntityAlias.objects.filter(**qdict_alias).all()
+            if alias_result:
+                q |= Q(named_entity__pk__in=[x.link_to.pk for x in alias_result])
+
+            qdict.append(q)
         if verb_str:
             friendly_name_2, qdict_2 = action_to_query_dict('verb__name', 'verb', verb_action, verb_str)
-            qdict.update(qdict_2)
+            qdict.append(Q(**qdict_2))
             friendly_name.append(friendly_name_2)
         if content_str:
             friendly_name_3, qdict_3 = action_to_query_dict('content', 'attribute value', content_action, content_str)
-            qdict.update(qdict_3)
+            qdict.append(Q(**qdict_3))
             friendly_name.append(friendly_name_3)
 
         if not qdict:
@@ -223,7 +236,7 @@ def AdvancedSearch(request):
             }
         else:
             # TODO: paginator
-            qresult = InfoboxTuple.objects.filter(**qdict).order_by('named_entity', 'verb')
+            qresult = InfoboxTuple.objects.filter(*qdict).order_by('named_entity', 'verb')
 
             result = []
             for i in qresult:
