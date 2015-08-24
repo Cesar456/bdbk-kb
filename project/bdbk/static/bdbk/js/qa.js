@@ -10,6 +10,7 @@ $(function(){
       .addClass('glyphicon-refresh glyphicon-refresh-animate');
 
     var text = $('#question').val();
+    $('#result').hide();
 
     $.ajax({
       type: 'post',
