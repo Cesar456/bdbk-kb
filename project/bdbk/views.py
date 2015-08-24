@@ -1,5 +1,6 @@
 import jieba
 import json
+import os
 import random
 import re
 import zlib
@@ -156,6 +157,19 @@ def populate_random_suggestion():
     return {
         'randomnes': random_nes
     }
+
+stopwords = None
+
+def is_in_stopwords(word):
+    global stopwords
+    if stopwords is None:
+        _stopwords = {}
+        with open(os.path.dirname(__file__)+'/stopwords.txt') as f:
+            for line in f:
+                _stopwords[line.rstrip('\n').decode('utf8')] = 1
+        stopwords = _stopwords
+
+    return word in stopwords
 
 # views starts
 
@@ -500,6 +514,9 @@ def qaQueryAPI(request):
         for i in range(len(words)):
             for j in range(i+1, len(words)+1):
                 s = ''.join(words[i:j])
+                if is_in_stopwords(s):
+                    continue
+
                 for o in NamedEntity.objects.filter(name__iexact=s):
                     ne_result.append({
                         'pos': (i,j),
@@ -546,6 +563,26 @@ def qaQueryAPI(request):
         'result': []
     }
 
+    named_entities = []
+    for i in ne_result:
+        if i['type'] == 'alias':
+            named_entities.append({
+                'ne_title': i['o'].link_to.name,
+                'ne_display': i['display'],
+                'is_alias': True,
+                'ne_id': i['o'].link_to.pk
+            })
+        else:
+            named_entities.append({
+                'ne_title': i['o'].name,
+                'ne_display': i['display'],
+                'ne_id': i['o'].pk,
+                'is_alias': False
+            })
+    result['named_entities'] = sorted(named_entities,
+                                      key=lambda x:len(x['ne_display']),
+                                      reverse=True)
+
     for i in ne_result:
         for j in verb_result:
             if i['pos'][1] > j['pos'][0]:
@@ -564,6 +601,45 @@ def qaQueryAPI(request):
                     'verb': verb_obj.name,
                     'ne_id': ne_obj.pk,
                     'content': strip_content_links(infobox[0].content)
+                })
+
+    if not result['result']:
+        def edit_distance(s1, s2):
+            m=len(s1)+1
+            n=len(s2)+1
+
+            tbl = {}
+            for i in range(m): tbl[i,0]=i
+            for j in range(n): tbl[0,j]=j
+            for i in range(1, m):
+                for j in range(1, n):
+                    cost = 0 if s1[i-1] == s2[j-1] else 1
+                    tbl[i,j] = min(tbl[i, j-1]+1, tbl[i-1, j]+1, tbl[i-1, j-1]+cost)
+
+            return tbl[i,j]
+
+        # find infobox by applying edit distance
+        for i in ne_result:
+            remaining = ''.join(words[i['pos'][1]:])
+            ne_obj = i['o'] if i['type'] != 'alias' else i['o'].link_to
+            matched = []
+            for j in ne_obj.infoboxtuple_set.all():
+                verb = j.verb.name
+
+                common_chr = set(remaining) & set(verb)
+                if not common_chr:
+                    continue
+
+                matched.append((len(common_chr), j))
+            matched = sorted(matched, key=lambda x:x[0], reverse=True)
+            if matched:
+                result['result'].append({
+                    'ne_title': ne_obj.name,
+                    'ne_display': i['display'],
+                    'is_alias': i['type'] == 'alias',
+                    'verb': matched[0][1].verb.name,
+                    'ne_id': ne_obj.name,
+                    'content': strip_content_links(matched[0][1].content)
                 })
 
     result['result'] = sorted(result['result'],

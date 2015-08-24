@@ -55,6 +55,17 @@ $(function(){
         else
           $('#other-results-row').hide();
 
+        var nes = '';
+        for(var i=0;i<d.named_entities.length;++i){
+          nes += '<li>' + link_to_ne(d.named_entities[i])+'</li>';
+          //break;
+        }
+        $('#named-entities').html(nes);
+        if(nes.length!=0)
+          $('#named-entities-row').show();
+        else
+          $('#named-entities-row').hide();
+
         $('#result').show();
       }
     });
