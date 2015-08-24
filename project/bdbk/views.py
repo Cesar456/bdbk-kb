@@ -159,7 +159,6 @@ def populate_random_suggestion():
     }
 
 stopwords = None
-
 def is_in_stopwords(word):
     global stopwords
     if stopwords is None:
@@ -170,6 +169,25 @@ def is_in_stopwords(word):
         stopwords = _stopwords
 
     return word in stopwords
+
+synonym = None
+def get_synonyms(word):
+    global synonym
+    if synonym is None:
+        _synonym = {}
+        with open(os.path.dirname(__file__)+'/synonym.txt') as f:
+            for line in f:
+                f = line.rstrip('\n').decode('utf8')
+                if f[0] == '#': continue
+                if len(f) <= 9: continue
+                f = f[9:]
+                print f
+                words = [x.strip() for x in re.split(r'\s+', f) if x.strip()]
+                for word in words:
+                    _synonym[word] = [x for x in words if x!=word]
+        synonym = _synonym
+
+    return synonym.get(word, [])
 
 # views starts
 
@@ -626,11 +644,20 @@ def qaQueryAPI(request):
             for j in ne_obj.infoboxtuple_set.all():
                 verb = j.verb.name
 
+                # synonyms
+                should_continue = False
+                for word in get_synonyms(verb):
+                    if word in remaining:
+                        matched.append((len(word), j))
+                        should_continue = True
+                if should_continue: continue
+
                 common_chr = set(remaining) & set(verb)
                 if not common_chr:
                     continue
 
                 matched.append((len(common_chr), j))
+
             matched = sorted(matched, key=lambda x:x[0], reverse=True)
             if matched:
                 result['result'].append({
