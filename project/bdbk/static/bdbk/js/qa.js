@@ -39,7 +39,8 @@ $(function(){
         if(d.result.length){
           $('#best-result-row').show();
           $('#no-result').hide();
-          $('#best-result').html(link_to_ne(d.result[0])+'的'+d.result[0].verb+'：'+d.result[0].content);
+          $('#best-result-title').html(link_to_ne(d.result[0])+'的'+d.result[0].verb);
+          $('#best-result-content').html(d.result[0].content);
         }
         else{
           $('#best-result-row').hide();

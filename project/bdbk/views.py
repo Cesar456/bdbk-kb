@@ -665,7 +665,7 @@ def qaQueryAPI(request):
                     'ne_display': i['display'],
                     'is_alias': i['type'] == 'alias',
                     'verb': matched[0][1].verb.name,
-                    'ne_id': ne_obj.name,
+                    'ne_id': ne_obj.pk,
                     'content': strip_content_links(matched[0][1].content)
                 })
 

@@ -46,10 +46,11 @@ status = {
   </div>
   <div class="row" id="best-result-row">
     <div class="col-md-8 col-md-offset-2">
-      <h4>最佳结果：</h4>
-      <p id="best-result"></p>
+      <h4 id="best-result-title"></h4>
+      <h2 id="best-result-content"></h2>
     </div>
   </div>
+  <hr/>
   <div class="row" id="other-results-row">
     <div class="col-md-8 col-md-offset-2">
       <h4>其他结果：</h4>
@@ -81,6 +82,10 @@ status = {
 
   #result{
   padding-top: 30px;
+  }
+
+  #best-result-content{
+  color: #49b34e;
   }
 </style>
 {% endblock %}
