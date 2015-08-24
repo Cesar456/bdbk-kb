@@ -1,5 +1,5 @@
 var svg = d3.select("#svg-container").append("svg")
-      .attr("width", "60%");
+      .attr("width", "80%");
 
 var width = svg.style("width").replace("px", "")*1.0;
 var height = width*0.618;
