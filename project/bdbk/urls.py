@@ -2,7 +2,7 @@ from django.conf.urls import patterns, url
 from django.views.generic.base import RedirectView
 
 urlpatterns = patterns('bdbk.views',
-    url(r'^$', RedirectView.as_view(url='showTuplesForNamedEntity/random/', permanent=False)),
+    url(r'^$', RedirectView.as_view(url='qa/', permanent=False)),
     url(r'^showTuplesForNamedEntity/(?P<nepk>\d+|random)/$', 'ShowTuplesForNamedEntity', name='ShowTuplesForNamedEntity'),
     url(r'^fuzzySearch/$', 'FuzzySearch', name='FuzzySearch'),
     url(r'^qa/$', 'QA', name='QA'),

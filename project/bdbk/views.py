@@ -504,7 +504,7 @@ def qaQueryAPI(request):
     text = request.POST.get('text', None)
 
     if text is None:
-        raise HttpResponseBadRequest()
+        return HttpResponseBadRequest()
 
     words = list(jieba.cut(text, cut_all=False))
 
