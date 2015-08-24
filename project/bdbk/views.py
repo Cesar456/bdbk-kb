@@ -500,7 +500,6 @@ def qaQueryAPI(request):
         for i in range(len(words)):
             for j in range(i+1, len(words)+1):
                 s = ''.join(words[i:j])
-                print s
                 for o in NamedEntity.objects.filter(name__iexact=s):
                     ne_result.append({
                         'pos': (i,j),
@@ -529,7 +528,6 @@ def qaQueryAPI(request):
         for i in range(len(words)):
             for j in range(i+1, len(words)+1):
                 s = ''.join(words[i:j])
-                print s
                 try:
                     o = Verb.objects.get(name__iexact=s)
                     verb_result.append({
