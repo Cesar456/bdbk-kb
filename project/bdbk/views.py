@@ -584,19 +584,21 @@ def qaQueryAPI(request):
     named_entities = []
     for i in ne_result:
         if i['type'] == 'alias':
-            named_entities.append({
-                'ne_title': i['o'].link_to.name,
-                'ne_display': i['display'],
-                'is_alias': True,
-                'ne_id': i['o'].link_to.pk
-            })
+            if i['o'].link_to.infoboxtuple_set.count() > 0:
+                named_entities.append({
+                    'ne_title': i['o'].link_to.name,
+                    'ne_display': i['display'],
+                    'is_alias': True,
+                    'ne_id': i['o'].link_to.pk
+                })
         else:
-            named_entities.append({
-                'ne_title': i['o'].name,
-                'ne_display': i['display'],
-                'ne_id': i['o'].pk,
-                'is_alias': False
-            })
+            if i['o'].infoboxtuple_set.count() > 0:
+                named_entities.append({
+                    'ne_title': i['o'].name,
+                    'ne_display': i['display'],
+                    'ne_id': i['o'].pk,
+                    'is_alias': False
+                })
     result['named_entities'] = sorted(named_entities,
                                       key=lambda x:len(x['ne_display']),
                                       reverse=True)
