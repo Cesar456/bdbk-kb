@@ -170,6 +170,9 @@ def is_in_stopwords(word):
 
     return word in stopwords
 
+# init stopwords cache
+is_in_stopwords('')
+
 synonym = None
 def get_synonyms(word):
     global synonym
@@ -181,13 +184,15 @@ def get_synonyms(word):
                 if f[0] == '#': continue
                 if len(f) <= 9: continue
                 f = f[9:]
-                print f
                 words = [x.strip() for x in re.split(r'\s+', f) if x.strip()]
                 for word in words:
                     _synonym[word] = [x for x in words if x!=word]
         synonym = _synonym
 
     return synonym.get(word, [])
+
+# init synonym cache
+get_synonyms('')
 
 # views starts
 
