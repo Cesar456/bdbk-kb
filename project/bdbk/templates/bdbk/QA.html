@@ -20,6 +20,11 @@ status = {
 {% block page_brand_href %}{% url 'ShowTuplesForNamedEntity' 'random' %}{% endblock %}
 
 {% block container %}
+<div class="row" style="height:130px">
+  <div class="col-md-12">
+    <span class="glyphicon glyphicon-flag btn btn-default pull-right" id="demo-qa">示例问答</span>
+  </div>
+</div>
 <div class="row">
   <div class="col-md-8 col-md-offset-2 text-center">
     <h4>输入你的问题</h4>
@@ -72,13 +77,21 @@ status = {
   </div>
 </div>
 
+<div class="help-box" style="display:none">
+  <div class="row">
+    <p>下一个问题：</p>
+    <select class="form-control">
+    </select>
+  </div>
+  <hr/>
+  <div class="row">
+    <button class="btn btn-sm btn-primary">Demo</button>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_css %}
 <style>
-  body{
-  padding-top: 135px;
-  }
 
   #result{
   padding-top: 30px;
@@ -94,6 +107,24 @@ status = {
 
   #best-result-content > a: hover{
   text-decoration: underline;
+  }
+
+  .help-box{
+  position: absolute;
+  top: 65px;
+  left:20px;
+  border: 1px black solid;
+  z-index: 1000;
+  background: white;
+  cursor: move;
+  }
+
+  .help-box .row{
+  margin: 10px;
+  }
+
+  .help-box .row p{
+  width: 300px;
   }
 </style>
 {% endblock %}
