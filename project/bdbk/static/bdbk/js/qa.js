@@ -34,7 +34,11 @@ $(function(){
     that.data('dragging', false);
   });
 
-  $('.help-box .row button').on('countdown', function(e, fn, timeout){
+  $('#help-box-close').on('click', function(){
+    $('.help-box').hide();
+  });
+
+  $('#help-box-demo').on('countdown', function(e, fn, timeout){
     var that = $(this);
     if(that.data('countdown'))
       return;
@@ -66,22 +70,7 @@ $(function(){
 
   $('.help-box').on('demobegin', function(){
     var that = $(this);
-    if(that.data('demobegin'))
-      return;
-
-    that.data('demobegin', true);
-    that.show();/*
-    $('.help-box .row button').trigger('countdown', [function(){
-      var that = $(this);
-      var selection = $('.help-box .row select');
-      var option = selection.val();
-
-      $('#question').trigger('typedemo', [hints[option], function(){
-
-      }]);
-
-      alert(option);
-    }]);*/
+    that.show();
   });
 
   $('#demo-qa').click(function(){
