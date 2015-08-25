@@ -684,3 +684,15 @@ def qaQueryAPI(request):
 
 def QA(request):
     return render(request, 'bdbk/QA.html', {})
+
+def qaHints(request):
+    random_objs = random_objects(NamedEntity, 50)
+    result = []
+    for i in random_objs:
+        infobox_count = i.infoboxtuple_set.count()
+        if infobox_count < 5: continue
+        infobox = i.infoboxtuple_set.all()[random.randint(0, infobox_count-1)]
+        if strip_content_links(infobox.content) != i.name and ' ' not in infobox.content:
+            result.append((i.search_term, infobox.verb.name))
+
+    return HttpResponse(json.dumps(result), content_type='text/json')

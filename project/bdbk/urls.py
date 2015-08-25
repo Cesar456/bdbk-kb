@@ -17,4 +17,5 @@ urlpatterns = patterns('bdbk.views',
     # json API
     url(r'^graph/namedEntityLinks/(?P<nepk>\d+)/$', 'namedEntityLinks', name='namedEntityLinks'),
     url(r'^qa/query/$', 'qaQueryAPI', name='qaQueryAPI'),
+    url(r'^qa/hints/$', 'qaHints', name='qaHints'),
 )
