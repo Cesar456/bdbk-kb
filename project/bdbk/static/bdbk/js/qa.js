@@ -1,47 +1,9 @@
 $(function(){
-  $('#question').focus(function(){
-    $(this).val($('#question-hint').hide().text());
-  });
   $('#question').on('keydown', function(e){
     if(e.keyCode==13){
       $('#ask').trigger('click');
     }
   });
-
-  var hints = ['颐和园的门票多少钱？',
-               '大雁塔位于哪里？',
-               '苹果公司的员工数量是多少？',
-               '英国的首都是什么？',
-               '中华人民共和国的国土面积是多少？',
-               '哈佛大学的现任校长是谁？',
-               '周杰伦的妻子是谁？',
-               'Macbook的操作系统是什么？',
-               'Windows的最新版本？',
-               'Quora的创始人是谁？',
-               '太阳的表面温度有多高？',
-               '火星的半径有多大？',
-               '红高粱的导演是谁？',
-               '百度的董事长是？'];
-  function animateHint(){
-    var hintContainer = $('#question-hint');
-    if(hintContainer.is(':hidden'))
-      return;
-
-    var i = Math.floor(Math.random() * hints.length);
-    hintContainer.fadeTo(500, 0, function(){
-      $(this).text(hints[i]).fadeTo(500, 1, function(){
-        setTimeout(animateHint, 2000);
-      });
-    });
-  }
-  animateHint();
-  $.getJSON('hints/', function(d){
-    var r = [];
-    for(var i=0;i<d.length;++i){
-      hints.push(d[i][0]+'的'+d[i][1]+'是？');
-    }
-  });
-
   $('#ask').on('click', function(){
     $(this).children('span')
       .removeClass('glyphicon-search')
